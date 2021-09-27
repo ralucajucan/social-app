@@ -1,7 +1,5 @@
 package org.utcn.socialapp.model;
 
-import org.utcn.socialapp.model.user.User;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,12 +11,12 @@ public class Post {
     @EmbeddedId
     private PostPK postPK;
 
-    @ManyToMany
-    @JoinTable(name = "liked_post",
-            joinColumns = {@JoinColumn(name = "post_id"),
-                    @JoinColumn(name = "author_user_id")},
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private List<User> likes = new ArrayList<>();
+    @OneToMany(mappedBy = "reactionPK.post")
+    private List<Reaction> reactions = new ArrayList<>();
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Date createdAt = new Date();
+
+    @Column(name = "updated_at", nullable = false)
     private Date updatedAt = new Date();
 }

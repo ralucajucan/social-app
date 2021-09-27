@@ -1,17 +1,20 @@
 package org.utcn.socialapp.model;
 
-import org.utcn.socialapp.model.user.User;
-
 import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
 public class RequestPK implements Serializable {
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", referencedColumnName = "user_id")
     private User sender;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id", referencedColumnName = "user_id")
     private User receiver;
 
     public RequestPK() {

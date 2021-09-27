@@ -1,7 +1,5 @@
 package org.utcn.socialapp.model;
 
-import org.utcn.socialapp.model.user.User;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
@@ -12,6 +10,7 @@ public class PostPK implements Serializable {
     @Column(name = "post_id")
     private Long postId;
     @ManyToOne
+    @JoinColumn(name = "author_id", referencedColumnName = "user_id")
     private User author;
 
     public PostPK() {
