@@ -1,28 +1,22 @@
 package org.utcn.socialapp.model;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
 public class ReactionPK implements Serializable {
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "post_id", referencedColumnName = "post_id"),
-            @JoinColumn(name = "author_id", referencedColumnName = "author_id")
-    })
-    private Post post;
+    private Long userId;
+    @Embedded
+    private PostPK postId;
 
     public ReactionPK() {
     }
 
-    public ReactionPK(User user, Post post) {
-        this.user = user;
-        this.post = post;
+    public ReactionPK(Long userId, PostPK postId) {
+        this.userId = userId;
+        this.postId = postId;
     }
 
     @Override
@@ -30,11 +24,11 @@ public class ReactionPK implements Serializable {
         if (this == o) return true;
         if (!(o instanceof ReactionPK)) return false;
         ReactionPK that = (ReactionPK) o;
-        return user.equals(that.user) && post.equals(that.post);
+        return userId.equals(that.userId) && postId.equals(that.postId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(user, post);
+        return Objects.hash(userId, postId);
     }
 }

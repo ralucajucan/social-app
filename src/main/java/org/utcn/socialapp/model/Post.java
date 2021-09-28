@@ -11,7 +11,12 @@ public class Post {
     @EmbeddedId
     private PostPK postPK;
 
-    @OneToMany(mappedBy = "reactionPK.post")
+    @MapsId("authorId")
+    @ManyToOne
+    @JoinColumn(name = "author_id", referencedColumnName = "id")
+    private User author;
+
+    @OneToMany(mappedBy = "post")
     private List<Reaction> reactions = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -19,4 +24,7 @@ public class Post {
 
     @Column(name = "updated_at", nullable = false)
     private Date updatedAt = new Date();
+
+    public Post() {
+    }
 }

@@ -1,23 +1,24 @@
 package org.utcn.socialapp.model;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
 public class PostPK implements Serializable {
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "post_id")
-    private Long postId;
-    @ManyToOne
-    @JoinColumn(name = "author_id", referencedColumnName = "user_id")
-    private User author;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long authorId;
 
     public PostPK() {
     }
 
-    public PostPK(User author) {
-        this.author = author;
+    public PostPK(Long id, Long authorId) {
+        this.id = id;
+        this.authorId = authorId;
     }
 
     @Override
@@ -25,11 +26,11 @@ public class PostPK implements Serializable {
         if (this == o) return true;
         if (!(o instanceof PostPK)) return false;
         PostPK postPK = (PostPK) o;
-        return postId.equals(postPK.postId) && author.equals(postPK.author);
+        return id.equals(postPK.id) && authorId.equals(postPK.authorId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(postId, author);
+        return Objects.hash(id, authorId);
     }
 }

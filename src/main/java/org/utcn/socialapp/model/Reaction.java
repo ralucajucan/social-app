@@ -1,5 +1,8 @@
 package org.utcn.socialapp.model;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -9,11 +12,32 @@ public class Reaction {
     @EmbeddedId
     private ReactionPK reactionPK;
 
+    @MapsId("userId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+
+    @MapsId("postId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "post_id", referencedColumnName = "id"),
+            @JoinColumn(name = "author_id", referencedColumnName = "author_id")
+    })
+    private Post post;
+
     @Enumerated(value = EnumType.STRING)
     private ReactionStatus reactionStatus;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Date createdAt = new Date();
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
-    private Date updatedAt = new Date();
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
+
+    public Reaction() {
+    }
 }

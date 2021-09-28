@@ -13,6 +13,16 @@ public class Request {
     @EmbeddedId
     private RequestPK requestPK;
 
+    @MapsId("senderId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", referencedColumnName = "id")
+    private User sender;
+
+    @MapsId("receiverId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id", referencedColumnName = "id")
+    private User receiver;
+
     @Enumerated(value = EnumType.STRING)
     private RequestStatus requestStatus;
 
@@ -28,4 +38,6 @@ public class Request {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedAt = new Date();
 
+    public Request() {
+    }
 }
