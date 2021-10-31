@@ -2,6 +2,7 @@ package org.utcn.socialapp.model;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.utcn.socialapp.model.security.User;
 
 import javax.persistence.*;
 import java.util.Date;

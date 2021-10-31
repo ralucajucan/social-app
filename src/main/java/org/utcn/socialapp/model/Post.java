@@ -1,8 +1,9 @@
 package org.utcn.socialapp.model;
 
+import org.utcn.socialapp.model.security.User;
+
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -10,6 +11,9 @@ import java.util.List;
 public class Post {
     @EmbeddedId
     private PostPK postPK;
+
+    @Embedded
+    private Audit audit = new Audit();
 
     @MapsId("authorId")
     @ManyToOne
@@ -19,11 +23,6 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<Reaction> reactions = new ArrayList<>();
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Date createdAt = new Date();
-
-    @Column(name = "updated_at", nullable = false)
-    private Date updatedAt = new Date();
 
     public Post() {
     }

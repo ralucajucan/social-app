@@ -1,9 +1,12 @@
-package org.utcn.socialapp.model;
+package org.utcn.socialapp.model.security;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.utcn.socialapp.model.security.Role;
+import org.utcn.socialapp.model.Audit;
+import org.utcn.socialapp.model.Post;
+import org.utcn.socialapp.model.Reaction;
+import org.utcn.socialapp.model.Request;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -15,7 +18,13 @@ import java.util.List;
 @Table(name = "user")
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(
+            name = "user_sequence",
+            sequenceName = "user_sequence"
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+            generator = "user_sequence"
+    )
     private Long id;
 
     @Embedded
@@ -39,14 +48,16 @@ public class User implements UserDetails {
 
     @Column(name = "locked", nullable = false)
     private boolean locked = false;
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Profile profile;
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reaction> reactions = new ArrayList<>();
+
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Request> requestsSent = new ArrayList<>();
+
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Request> requestsReceived = new ArrayList<>();
 
@@ -60,20 +71,8 @@ public class User implements UserDetails {
         this.role = role;
     }
 
-    public boolean isLocked() {
-        return locked;
-    }
-
     public void setLocked(boolean locked) {
         this.locked = locked;
-    }
-
-    public Profile getProfile() {
-        return profile;
-    }
-
-    public void setProfile(Profile profile) {
-        this.profile = profile;
     }
 
     public Long getId() {
@@ -90,7 +89,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role));
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override

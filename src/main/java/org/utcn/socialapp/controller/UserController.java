@@ -1,23 +1,43 @@
 package org.utcn.socialapp.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.*;
+import org.utcn.socialapp.config.exception.BusinessException;
+import org.utcn.socialapp.model.dto.RegisterDTO;
+import org.utcn.socialapp.model.security.Token;
+import org.utcn.socialapp.model.security.User;
+import org.utcn.socialapp.service.security.UserService;
 
 @RestController()
-@RequestMapping
 public class UserController {
-    @GetMapping
-    public String login() {
-        return "This is login page! TBI...";
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @GetMapping("profile")
+    @PostMapping("/login")
+    public ResponseEntity<User> login(@RequestBody final String username) throws UsernameNotFoundException {
+        return ResponseEntity.ok(userService.loadUserByUsername(username));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Token> register(@RequestBody final RegisterDTO registerDTO) throws BusinessException {
+        return ResponseEntity.ok(userService.register(registerDTO));
+    }
+
+    @GetMapping("/register/confirm")
+    public ResponseEntity<String> enableUserWithToken(@RequestParam("token") String token) throws BusinessException {
+        return ResponseEntity.ok(userService.enableUserWithToken(token));
+    }
+
+    @GetMapping("/profile")
     public String profile() {
         return "Profile TBI!...";
     }
 
-    @GetMapping("admin")
+    @GetMapping("/admin")
     public String admin() {
         return "Admin page, hello!";
     }
