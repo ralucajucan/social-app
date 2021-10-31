@@ -1,4 +1,4 @@
-package org.utcn.socialapp.user.profile;
+package org.utcn.socialapp.profile;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

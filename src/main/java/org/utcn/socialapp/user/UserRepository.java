@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.utcn.socialapp.user.profile.Profile;
+import org.utcn.socialapp.profile.Profile;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {

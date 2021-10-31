@@ -3,11 +3,11 @@ package org.utcn.socialapp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.utcn.socialapp.profile.Profile;
+import org.utcn.socialapp.profile.ProfileRepository;
 import org.utcn.socialapp.user.Role;
 import org.utcn.socialapp.user.User;
 import org.utcn.socialapp.user.UserRepository;
-import org.utcn.socialapp.user.profile.Profile;
-import org.utcn.socialapp.user.profile.ProfileRepository;
 
 import java.time.LocalDate;
 
