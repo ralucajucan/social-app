@@ -25,7 +25,6 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<Reaction> reactions = new ArrayList<>();
 
-
     public Post() {
     }
 }

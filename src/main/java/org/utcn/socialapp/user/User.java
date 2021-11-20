@@ -33,9 +33,6 @@ public class User implements UserDetails {
     @Column(name = "email", unique = true, nullable = false, length = 45)
     private String email;
 
-    @Column(name = "username", unique = true, nullable = false, length = 45)
-    private String username;
-
     @Column(name = "password", nullable = false)
     private String password;
 
@@ -64,9 +61,8 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String email, String username, String password, Role role) {
+    public User(String email, String password, Role role) {
         this.email = email;
-        this.username = username;
         this.password = password;
         this.role = role;
     }
@@ -99,11 +95,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+        return getEmail();
     }
 
     @Override

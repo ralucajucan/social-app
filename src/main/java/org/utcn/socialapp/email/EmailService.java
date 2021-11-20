@@ -11,7 +11,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 @Service
-public class EmailService implements EmailSender {
+public class EmailService {
     private final static Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender javaMailSender;
@@ -20,9 +20,8 @@ public class EmailService implements EmailSender {
         this.javaMailSender = javaMailSender;
     }
 
-    @Override
     @Async
-    public void send(String to, String email) {
+    public void sendRegisterToken(String to, String email) {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -30,13 +29,14 @@ public class EmailService implements EmailSender {
             helper.setTo(to);
             helper.setSubject("Confirm your email.");
             helper.setFrom("raluca.jucan@gmail.com");
+            javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {
             LOGGER.error("Fail to send email. ", e);
             throw new IllegalStateException("Failed to send email!");
         }
     }
 
-    public String buildEmail(String name, String link) {
+    public String buildRegisterEmail(String name, String link) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
                 "\n" +
                 "<span style=\"display:none;font-size:1px;color:#fff;max-height:0\"></span>\n" +

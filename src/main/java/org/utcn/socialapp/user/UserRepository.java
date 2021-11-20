@@ -8,8 +8,6 @@ import org.utcn.socialapp.profile.Profile;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    User findByUsernameOrEmail(String username, String email);
-
     User findByEmail(String email);
 
     @Modifying

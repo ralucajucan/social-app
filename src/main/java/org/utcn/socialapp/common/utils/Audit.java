@@ -4,33 +4,33 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Embeddable
 public class Audit {
 
     @Column(name = "created_on")
-    private LocalDateTime createdOn;
+    private Instant createdOn;
 
     @Column(name = "updated_on")
-    private LocalDateTime updatedOn;
+    private Instant updatedOn;
 
     @PrePersist
     public void prePersist() {
-        createdOn = LocalDateTime.now();
+        createdOn = Instant.now();
         updatedOn = createdOn;
     }
 
     @PreUpdate
     public void preUpdate() {
-        updatedOn = LocalDateTime.now();
+        updatedOn = Instant.now();
     }
 
-    public LocalDateTime getCreatedOn() {
+    public Instant getCreatedOn() {
         return createdOn;
     }
 
-    public LocalDateTime getUpdatedOn() {
+    public Instant getUpdatedOn() {
         return updatedOn;
     }
 }
