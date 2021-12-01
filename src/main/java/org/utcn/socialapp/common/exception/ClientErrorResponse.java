@@ -1,23 +1,26 @@
 package org.utcn.socialapp.common.exception;
 
+import org.springframework.http.HttpStatus;
+
 public enum ClientErrorResponse {
-    BAD_REQUEST(400, "Bad Request!"),
-    BAD_CREDENTIALS(400, "Bad User Credentials!"),
-    UNAUTHORIZED(401, "Unauthorized!"),
-    DISABLED(401, "User Is Disabled!"),
-    LOCKED(401, "User Is Locked!"),
-    PAYMENT_REQUIRED(402, "Payment Required!"),
-    FORBIDDEN(403, "Forbidden Action!"),
-    NOT_FOUND(404, "Not Found!"),
-    NOT_ALLOWED(405, "Action Not Allowed!"),
-    EXPIRED_TOKEN(405, "Token is expired!"),
-    CONFLICT(409, "Conflict with the server state!"),
-    CONFLICT_REGISTER(409, "User Credentials Already Taken!"),
-    CONFLICT_TOKEN(409, "User is already enabled.");
-    public final Integer status;
+    BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request!"),
+    BAD_CREDENTIALS(HttpStatus.BAD_REQUEST, "Bad User Credentials!"),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized!"),
+    DISABLED(HttpStatus.UNAUTHORIZED, "User Is Disabled!"),
+    LOCKED(HttpStatus.UNAUTHORIZED, "User Is Locked!"),
+    PAYMENT_REQUIRED(HttpStatus.PAYMENT_REQUIRED, "Payment Required!"),
+    FORBIDDEN(HttpStatus.FORBIDDEN, "Forbidden Action!"),
+    EXPIRED_TOKEN(HttpStatus.FORBIDDEN, "Token is expired!"),
+    EXPIRED_SESSION(HttpStatus.FORBIDDEN,"Session has expired!"),
+    NOT_FOUND(HttpStatus.NOT_FOUND, "Not Found!"),
+    NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "Action Not Allowed!"),
+    CONFLICT(HttpStatus.CONFLICT, "Conflict with the server state!"),
+    CONFLICT_REGISTER(HttpStatus.CONFLICT, "User Credentials Already Taken!"),
+    CONFLICT_TOKEN(HttpStatus.CONFLICT, "User is already enabled.");
+    public final HttpStatus status;
     public final String message;
 
-    ClientErrorResponse(Integer status, String message) {
+    ClientErrorResponse(HttpStatus status, String message) {
         this.status = status;
         this.message = message;
     }

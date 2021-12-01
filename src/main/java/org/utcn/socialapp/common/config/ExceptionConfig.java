@@ -15,10 +15,8 @@ public class ExceptionConfig {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity parseBusinessException(BusinessException ex) {
-        Map<String, Object> responseMessage = new LinkedHashMap<>();
-        responseMessage.put("status", ex.getStatus());
-        responseMessage.put("message", ex.getMessage());
-
-        return new ResponseEntity(responseMessage, HttpStatus.valueOf(ex.getStatus()));
+        return ResponseEntity
+                .status(ex.getHttpStatus())
+                .body(ex.getMessage());
     }
 }

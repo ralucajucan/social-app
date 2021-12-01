@@ -3,6 +3,9 @@ package org.utcn.socialapp.user;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.utcn.socialapp.common.exception.BusinessException;
+
+import static org.utcn.socialapp.common.exception.ClientErrorResponse.NOT_FOUND;
 
 @Service
 public class UserService implements UserDetailsService {

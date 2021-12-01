@@ -12,9 +12,8 @@ import org.utcn.socialapp.user.User;
 import org.utcn.socialapp.user.UserRepository;
 
 import javax.transaction.Transactional;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -74,7 +73,7 @@ public class RegisterService{
         // Send confirmation token:
         String uuid = UUID.randomUUID().toString();
         RegisterToken registerToken = new RegisterToken(user, uuid,
-                Instant.now().plus(15, ChronoUnit.MINUTES));
+                OffsetDateTime.now().plusMinutes(15));
         registerTokenService.saveToken(registerToken);
 
         // Send email:
@@ -90,11 +89,11 @@ public class RegisterService{
         if (Objects.nonNull(registerToken.getConfirmation())) {
             throw new BusinessException(CONFLICT_TOKEN);
         }
-        Instant expiration = registerToken.getExpiration();
-        if (expiration.isBefore(Instant.now())) {
+        OffsetDateTime expiration = registerToken.getExpiration();
+        if (expiration.isBefore(OffsetDateTime.now())) {
             throw new BusinessException(EXPIRED_TOKEN);
         }
-        registerToken.setConfirmation(Instant.now());
+        registerToken.setConfirmation(OffsetDateTime.now());
         registerTokenService.saveToken(registerToken);
         userRepository.enableUser(registerToken.getUser().getId());
         return "Confirmed!";

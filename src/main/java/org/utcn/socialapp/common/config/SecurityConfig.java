@@ -13,7 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.utcn.socialapp.common.filter.JwtFilter;
+import org.utcn.socialapp.auth.jwt.JWTFilter;
 
 import static org.utcn.socialapp.user.Role.ADMIN;
 import static org.utcn.socialapp.user.Role.USER;
@@ -23,10 +23,10 @@ import static org.utcn.socialapp.user.Role.USER;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     BCryptPasswordEncoder bCryptPasswordEncoder;
-    private JwtFilter jwtFilter;
+    private JWTFilter jwtFilter;
 
     public SecurityConfig(@Qualifier("userService") UserDetailsService userDetailsService,
-                          BCryptPasswordEncoder bCryptPasswordEncoder, JwtFilter jwtFilter) {
+                          BCryptPasswordEncoder bCryptPasswordEncoder, JWTFilter jwtFilter) {
         this.userDetailsService = userDetailsService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtFilter=jwtFilter;
@@ -52,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests()
-                .antMatchers("/api/register", "/api/register/confirm", "/api/login")
+                .antMatchers("/api/auth/**")
                 .permitAll()
                 .antMatchers("/api/profile")
                 .hasAnyRole(USER.name(), ADMIN.name())

@@ -3,6 +3,7 @@ package org.utcn.socialapp.user;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.utcn.socialapp.auth.refreshToken.RefreshToken;
 import org.utcn.socialapp.common.utils.Audit;
 import org.utcn.socialapp.post.Post;
 import org.utcn.socialapp.post.reaction.Reaction;
@@ -46,6 +47,9 @@ public class User implements UserDetails {
     @Column(name = "locked", nullable = false)
     private boolean locked = false;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private RefreshToken refreshToken;
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
@@ -65,6 +69,14 @@ public class User implements UserDetails {
         this.email = email;
         this.password = password;
         this.role = role;
+    }
+
+    public RefreshToken getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(RefreshToken refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public void setLocked(boolean locked) {

@@ -1,4 +1,4 @@
-package org.utcn.socialapp.common.utils;
+package org.utcn.socialapp.auth.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

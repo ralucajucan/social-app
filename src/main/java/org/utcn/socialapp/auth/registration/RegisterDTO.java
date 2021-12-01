@@ -13,12 +13,7 @@ public class RegisterDTO {
     private String lastName;
     private String birthDate;
 
-    public RegisterDTO(String email, String password, String firstName, String lastName, String birthDate) {
-        this.email = email;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.birthDate = birthDate;
+    public RegisterDTO() {
     }
 
     public boolean anyMatchNull() {
