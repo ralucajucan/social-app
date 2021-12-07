@@ -1,24 +1,14 @@
 package org.utcn.socialapp.auth.refreshToken;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RefreshTokenResponse {
-    private final String accessToken;
-    private final String refreshToken;
-    private final String tokenType = "Bearer";
-
-    public RefreshTokenResponse(String accessToken, String refreshToken) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-    }
-
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public String getTokenType() {
-        return tokenType;
-    }
+    private String accessToken;
+    private String refreshToken;
+    private String tokenType = "Bearer";
 }

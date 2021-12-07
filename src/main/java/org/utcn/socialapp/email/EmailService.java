@@ -1,5 +1,6 @@
 package org.utcn.socialapp.email;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -11,14 +12,10 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
     private final static Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
-
     private final JavaMailSender javaMailSender;
-
-    public EmailService(JavaMailSender javaMailSender) {
-        this.javaMailSender = javaMailSender;
-    }
 
     @Async
     public void sendRegisterToken(String to, String email) {

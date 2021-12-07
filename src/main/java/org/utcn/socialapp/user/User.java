@@ -1,5 +1,9 @@
 package org.utcn.socialapp.user;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,35 +20,35 @@ import java.util.Collections;
 import java.util.List;
 
 @Entity
-@Table(name = "user")
+@Getter
+@Setter
+@NoArgsConstructor
 public class User implements UserDetails {
     @Id
-    @SequenceGenerator(
-            name = "user_sequence",
-            sequenceName = "user_sequence"
-    )
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-            generator = "user_sequence"
-    )
+    @SequenceGenerator(name = "user_sequence", sequenceName = "user_sequence")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_sequence")
+    @Setter(AccessLevel.NONE)
     private Long id;
 
     @Embedded
+    @Setter(AccessLevel.NONE)
     private Audit audit = new Audit();
 
-    @Column(name = "email", unique = true, nullable = false, length = 45)
+    @Column(unique = true, nullable = false, length = 45)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false)
+    @Getter(AccessLevel.NONE)
     private String password;
 
-    @Column(name = "role", nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
     @Enumerated(value = EnumType.STRING)
     private Role role;
 
-    @Column(name = "enabled", nullable = false)
+    @Column(nullable = false)
     private boolean enabled = false;
 
-    @Column(name = "locked", nullable = false)
+    @Column(nullable = false)
     private boolean locked = false;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -62,37 +66,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Request> requestsReceived = new ArrayList<>();
 
-    public User() {
-    }
-
     public User(String email, String password, Role role) {
         this.email = email;
         this.password = password;
         this.role = role;
-    }
-
-    public RefreshToken getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(RefreshToken refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     @Override
@@ -128,53 +105,5 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
-    }
-
-    public List<Reaction> getReactions() {
-        return reactions;
-    }
-
-    public void setReactions(List<Reaction> reactions) {
-        this.reactions = reactions;
-    }
-
-    public List<Request> getRequestsSent() {
-        return requestsSent;
-    }
-
-    public void setRequestsSent(List<Request> requestsSent) {
-        this.requestsSent = requestsSent;
-    }
-
-    public List<Request> getRequestsReceived() {
-        return requestsReceived;
-    }
-
-    public void setRequestsReceived(List<Request> requestsReceived) {
-        this.requestsReceived = requestsReceived;
     }
 }

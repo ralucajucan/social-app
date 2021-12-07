@@ -1,17 +1,12 @@
 package org.utcn.socialapp.auth.jwt;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class JWTResponse {
     private String token;
-
-    public JWTResponse(String token) {
-        this.token = token;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
 }

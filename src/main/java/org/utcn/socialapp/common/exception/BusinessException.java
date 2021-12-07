@@ -3,8 +3,13 @@ package org.utcn.socialapp.common.exception;
 import org.springframework.http.HttpStatus;
 
 public class BusinessException extends Exception {
-    private HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+    private HttpStatus httpStatus;
 
+
+    public BusinessException(String message, HttpStatus httpStatus) {
+        super(message);
+        this.httpStatus = httpStatus;
+    }
 
     public BusinessException(ClientErrorResponse clientErrorResponse) {
         super(clientErrorResponse.message);
@@ -13,9 +18,5 @@ public class BusinessException extends Exception {
 
     public HttpStatus getHttpStatus() {
         return httpStatus;
-    }
-
-    public void setHttpStatus(HttpStatus httpStatus) {
-        this.httpStatus = httpStatus;
     }
 }

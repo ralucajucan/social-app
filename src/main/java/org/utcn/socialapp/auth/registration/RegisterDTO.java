@@ -1,8 +1,15 @@
 package org.utcn.socialapp.auth.registration;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.util.Objects;
 import java.util.stream.Stream;
 
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegisterDTO {
     /**
      * Mandatory fields for creating USER and PROFILE entities.
@@ -13,31 +20,7 @@ public class RegisterDTO {
     private String lastName;
     private String birthDate;
 
-    public RegisterDTO() {
-    }
-
     public boolean anyMatchNull() {
-        return Stream.of(email, password, firstName, lastName, birthDate)
-                .anyMatch(Objects::isNull);
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getBirthDate() {
-        return birthDate;
+        return Stream.of(email, password, firstName, lastName, birthDate).anyMatch(Objects::isNull);
     }
 }

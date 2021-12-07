@@ -3,7 +3,7 @@ package org.utcn.socialapp.auth.registration;
 import org.utcn.socialapp.user.User;
 
 import javax.persistence.*;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Entity
 public class RegisterToken {
@@ -20,14 +20,14 @@ public class RegisterToken {
 
 
     @Column(nullable = false)
-    private OffsetDateTime expiration;
+    private Instant expiration;
 
-    private OffsetDateTime confirmation;
+    private Instant confirmation;
 
     public RegisterToken() {
     }
 
-    public RegisterToken(User user, String token, OffsetDateTime expiration) {
+    public RegisterToken(User user, String token, Instant expiration) {
         this.user = user;
         this.token = token;
         this.expiration = expiration;
@@ -41,15 +41,15 @@ public class RegisterToken {
         return id;
     }
 
-    public OffsetDateTime getExpiration() {
+    public Instant getExpiration() {
         return expiration;
     }
 
-    public OffsetDateTime getConfirmation() {
+    public Instant getConfirmation() {
         return confirmation;
     }
 
-    public void setConfirmation(OffsetDateTime confirmation) {
+    public void setConfirmation(Instant confirmation) {
         this.confirmation = confirmation;
     }
 

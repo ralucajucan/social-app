@@ -21,10 +21,8 @@ public class Reaction {
 
     @MapsId("postId")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "post_id", referencedColumnName = "id"),
-            @JoinColumn(name = "author_id", referencedColumnName = "author_id")
-    })
+    @JoinColumns({@JoinColumn(name = "post_id", referencedColumnName = "id"), @JoinColumn(name = "author_id",
+            referencedColumnName = "author_id")})
     private Post post;
 
     @Enumerated(value = EnumType.STRING)

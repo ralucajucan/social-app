@@ -1,15 +1,21 @@
 package org.utcn.socialapp.profile;
 
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.utcn.socialapp.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "profile")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Profile {
     @Id
+    @Setter(AccessLevel.NONE)
     private Long id;
 
     @MapsId
@@ -24,7 +30,6 @@ public class Profile {
     private String lastName;
 
     @Column(name = "birth_date", nullable = false)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
 
     @Column(name = "biography", length = 200)
@@ -39,15 +44,6 @@ public class Profile {
     @Column(name = "phone_number", length = 15)
     private String phoneNumber;
 
-    @Enumerated(value = EnumType.STRING)
-    private Relationship relationship;
-
-    @Enumerated(value = EnumType.STRING)
-    private Gender gender;
-
-    public Profile() {
-    }
-
     public Profile(User user, String firstName, String lastName, LocalDate birthDate) {
         this.user = user;
         this.firstName = firstName;
@@ -55,16 +51,7 @@ public class Profile {
         this.birthDate = birthDate;
     }
 
-
-    public Long getId() {
-        return id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+    public String getName() {
+        return getFirstName() + " " + getLastName();
     }
 }

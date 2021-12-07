@@ -1,19 +1,14 @@
 package org.utcn.socialapp.user;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.utcn.socialapp.common.exception.BusinessException;
-
-import static org.utcn.socialapp.common.exception.ClientErrorResponse.NOT_FOUND;
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     /**
      * Login by either email or username

@@ -3,7 +3,7 @@ package org.utcn.socialapp.auth.refreshToken;
 import org.utcn.socialapp.user.User;
 
 import javax.persistence.*;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Entity
 public class RefreshToken {
@@ -19,12 +19,12 @@ public class RefreshToken {
     private String token;
 
     @Column(nullable = false)
-    private OffsetDateTime expiration;
+    private Instant expiration;
 
     public RefreshToken() {
     }
 
-    public RefreshToken(User user, String token, OffsetDateTime expiration) {
+    public RefreshToken(User user, String token, Instant expiration) {
         this.user = user;
         this.token = token;
         this.expiration = expiration;
@@ -34,10 +34,9 @@ public class RefreshToken {
         this.token = token;
     }
 
-    public void setExpiration(OffsetDateTime expiration) {
+    public void setExpiration(Instant expiration) {
         this.expiration = expiration;
     }
-
 
     public Long getId() {
         return id;
@@ -51,7 +50,7 @@ public class RefreshToken {
         return token;
     }
 
-    public OffsetDateTime getExpiration() {
+    public Instant getExpiration() {
         return expiration;
     }
 }

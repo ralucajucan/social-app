@@ -1,5 +1,5 @@
 package org.utcn.socialapp.user;
 
 public enum Role {
-    ADMIN, USER
+    ADMIN, USER, STUDENT, PROFESSOR, INVITEE, UNIVERSITY
 }
