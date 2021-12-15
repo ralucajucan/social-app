@@ -5,6 +5,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.utcn.socialapp.common.exception.BusinessException;
 import org.utcn.socialapp.message.dto.ChatDTO;
@@ -13,14 +17,15 @@ import org.utcn.socialapp.message.dto.SendDTO;
 import org.utcn.socialapp.user.User;
 import org.utcn.socialapp.user.UserRepository;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.utcn.socialapp.common.exception.ClientErrorResponse.BAD_REQUEST;
-import static org.utcn.socialapp.common.exception.ClientErrorResponse.NOT_FOUND;
+import static org.utcn.socialapp.common.exception.ClientErrorResponse.*;
 
 @Service
 @RequiredArgsConstructor
@@ -41,26 +46,17 @@ public class MessageService {
         );
     }
 
-    public MessageDTO sendOne(SendDTO sendDTO) throws BusinessException {
-        User sender = userRepository
-                .findById(sendDTO.getSender())
-                .orElseThrow(() -> new BusinessException(NOT_FOUND));
-        String senderName = userRepository
-                .findProfileByUserId(sender.getId())
-                .orElseThrow(() -> new BusinessException(NOT_FOUND))
-                .getName();
+    public SendDTO sendToUser(String principalEmail, SendDTO sendDTO) throws BusinessException {
+        User sender = userRepository.findByEmail(principalEmail);
+
         User receiver = userRepository
                 .findById(sendDTO.getReceiver())
                 .orElseThrow(() -> new BusinessException(NOT_FOUND));
-        String receiverName = userRepository
-                .findProfileByUserId(receiver.getId())
-                .orElseThrow(() -> new BusinessException(NOT_FOUND))
-                .getName();
         Long messageId = messageRepository.countAllBySenderAndReceiver(sender, receiver);
         Message message = new Message(messageId, sender, receiver, sendDTO.getText());
         messageRepository.save(message);
-        messagingTemplate.convertAndSendToUser(senderName, receiverName, message.getText());
-        return newMessageDTO(message);
+        sendDTO.setReceiverName(receiver.getEmail());
+        return sendDTO;
     }
 
     public List<MessageDTO>  getConversation(ChatDTO chatDTO) throws BusinessException {

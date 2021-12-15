@@ -40,6 +40,7 @@ public class AuthController {
     @DeleteMapping("/logout")
     public ResponseEntity<User> logout(@RequestParam Long userId) throws BusinessException {
         authService.logout(userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+                             .build();
     }
 }

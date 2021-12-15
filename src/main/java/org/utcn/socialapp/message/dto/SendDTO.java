@@ -14,10 +14,15 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class SendDTO {
     private String text;
-    private Long sender;
     private Long receiver;
+    private String receiverName;
 
     public boolean requiredMatchNull() {
-        return Stream.of(sender, receiver).anyMatch(Objects::isNull);
+        return Stream.of(receiver)
+                     .anyMatch(Objects::isNull);
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
     }
 }

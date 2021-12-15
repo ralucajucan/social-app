@@ -18,7 +18,8 @@ public class ChatDTO {
     private int page = 0;
 
     public boolean requiredMatchNull() {
-        return Stream.of(sender,receiver).anyMatch(Objects::isNull);
+        return Stream.of(sender, receiver)
+                     .anyMatch(Objects::isNull);
     }
 
     public boolean pageIsNegative() {

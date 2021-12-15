@@ -42,7 +42,10 @@ public class JWTUtility implements Serializable {
 
     //for retrieving any information from token we will need the secret key
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+        return Jwts.parser()
+                   .setSigningKey(secretKey)
+                   .parseClaimsJws(token)
+                   .getBody();
     }
 
 
@@ -65,12 +68,12 @@ public class JWTUtility implements Serializable {
     //2. Sign the JWT using the HS512 algorithm and secret key.
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
-                .signWith(SignatureAlgorithm.HS512, secretKey)
-                .compact();
+                   .setClaims(claims)
+                   .setSubject(subject)
+                   .setIssuedAt(new Date(System.currentTimeMillis()))
+                   .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+                   .signWith(SignatureAlgorithm.HS512, secretKey)
+                   .compact();
     }
 
 

@@ -26,7 +26,7 @@ public class PostPK implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if ( o == null) return false;
+        if (o == null) return false;
         if (!(o instanceof PostPK)) return false;
         PostPK postPK = (PostPK) o;
         return id.equals(postPK.id) && authorId.equals(postPK.authorId);

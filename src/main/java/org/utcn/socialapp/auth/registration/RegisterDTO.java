@@ -21,6 +21,7 @@ public class RegisterDTO {
     private String birthDate;
 
     public boolean anyMatchNull() {
-        return Stream.of(email, password, firstName, lastName, birthDate).anyMatch(Objects::isNull);
+        return Stream.of(email, password, firstName, lastName, birthDate)
+                     .anyMatch(Objects::isNull);
     }
 }

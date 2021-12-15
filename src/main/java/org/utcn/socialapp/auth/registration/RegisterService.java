@@ -59,9 +59,10 @@ public class RegisterService {
         profileRepository.save(profile);
 
         // Send confirmation token:
-        String uuid = UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID()
+                          .toString();
         RegisterToken registerToken = new RegisterToken(user, uuid, Instant.now()
-                .plus(REGISTER_TOKEN_VALIDITY_MINS, ChronoUnit.MINUTES));
+                                                                           .plus(REGISTER_TOKEN_VALIDITY_MINS, ChronoUnit.MINUTES));
         registerTokenService.saveToken(registerToken);
 
         // Send email:
@@ -75,7 +76,7 @@ public class RegisterService {
     @Transactional
     public String enableUserWithToken(String uuid) throws BusinessException {
         RegisterToken registerToken = registerTokenService.getToken(uuid)
-                .orElseThrow(() -> new BusinessException(NOT_FOUND));
+                                                          .orElseThrow(() -> new BusinessException(NOT_FOUND));
         if (Objects.nonNull(registerToken.getConfirmation())) {
             throw new BusinessException(CONFLICT_TOKEN);
         }
@@ -85,7 +86,8 @@ public class RegisterService {
         }
         registerToken.setConfirmation(Instant.now());
         registerTokenService.saveToken(registerToken);
-        userRepository.enableUser(registerToken.getUser().getId());
+        userRepository.enableUser(registerToken.getUser()
+                                               .getId());
         return "Confirmed!";
     }
 }

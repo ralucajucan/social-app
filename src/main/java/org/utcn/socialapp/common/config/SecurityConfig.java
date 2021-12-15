@@ -31,15 +31,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         // To allow Pre-flight [OPTIONS] request from browser
-        web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
+        web.ignoring()
+           .antMatchers(HttpMethod.OPTIONS, "/**");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().cors();
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.csrf()
+            .disable()
+            .cors();
+        http.sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests()
-                .antMatchers("/api/auth/**","/message/**")
+                .antMatchers("/api/auth/**","/message/**","/ws")
                 .permitAll()
                 .antMatchers("/api/profile")
                 .hasAnyRole(USER.name(), ADMIN.name())
@@ -53,6 +57,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic();
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
-
-
 }

@@ -29,19 +29,24 @@ public class RefreshTokenService implements Serializable {
 
     @Transactional
     public String createRefreshToken(User user) {
-        String token = UUID.randomUUID().toString();
-        Instant expiration = Instant.now().plus(REFRESH_TOKEN_VALIDITY_DAY, ChronoUnit.DAYS);
+        String token = UUID.randomUUID()
+                           .toString();
+        Instant expiration = Instant.now()
+                                    .plus(REFRESH_TOKEN_VALIDITY_DAY, ChronoUnit.DAYS);
         RefreshToken refreshToken = user.getRefreshToken();
         if (Objects.nonNull(refreshToken)) {
             refreshToken.setToken(token);
             refreshToken.setExpiration(expiration);
-            return refreshTokenRepository.save(refreshToken).getToken();
+            return refreshTokenRepository.save(refreshToken)
+                                         .getToken();
         }
-        return refreshTokenRepository.save(new RefreshToken(user, token, expiration)).getToken();
+        return refreshTokenRepository.save(new RefreshToken(user, token, expiration))
+                                     .getToken();
     }
 
     public void verifyExpiration(RefreshToken token) throws BusinessException {
-        if (token.getExpiration().isBefore(Instant.now())) {
+        if (token.getExpiration()
+                 .isBefore(Instant.now())) {
             refreshTokenRepository.delete(token);
             throw new BusinessException(EXPIRED_TOKEN);
         }
@@ -50,6 +55,6 @@ public class RefreshTokenService implements Serializable {
     @Transactional
     public void deleteByUserId(Long userId) throws BusinessException {
         refreshTokenRepository.delete(refreshTokenRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(NOT_FOUND)));
+                                                            .orElseThrow(() -> new BusinessException(NOT_FOUND)));
     }
 }

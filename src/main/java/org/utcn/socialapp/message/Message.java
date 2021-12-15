@@ -19,18 +19,18 @@ public class Message {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("senderId")
-    @JoinColumn(name="sender_id", referencedColumnName = "id")
+    @JoinColumn(name = "sender_id", referencedColumnName = "id")
     private User sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("receiverId")
-    @JoinColumn(name="receiver_id", referencedColumnName = "id")
+    @JoinColumn(name = "receiver_id", referencedColumnName = "id")
     private User receiver;
 
     private String text;
 
     public Message(Long id, User sender, User receiver, String text) {
-        this.messagePK = new MessagePK(id,sender.getId(), receiver.getId());
+        this.messagePK = new MessagePK(id, sender.getId(), receiver.getId());
         this.sender = sender;
         this.receiver = receiver;
         this.text = text;

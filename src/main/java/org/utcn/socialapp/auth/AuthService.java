@@ -39,7 +39,8 @@ public class AuthService {
         final User user = userService.loadUserByUsername(authDTO.getEmail());
         final String jwtToken = jwtUtility.generateToken(user);
         String refreshToken = refreshTokenService.createRefreshToken(user);
-        return new AuthResDTO(jwtToken, refreshToken, user.getId(), user.getEmail(), user.getRole().toString());
+        return new AuthResDTO(jwtToken, refreshToken, user.getId(), user.getEmail(), user.getRole()
+                                                                                         .toString());
     }
 
     public RegisterToken register(RegisterDTO registerDTO) throws BusinessException {
@@ -52,7 +53,7 @@ public class AuthService {
 
     public JWTResponse refreshJwtToken(String token) throws BusinessException {
         RefreshToken refreshToken = refreshTokenService.findByToken(token)
-                .orElseThrow(() -> new BusinessException(NOT_FOUND));
+                                                       .orElseThrow(() -> new BusinessException(NOT_FOUND));
         refreshTokenService.verifyExpiration(refreshToken);
         final User user = refreshToken.getUser();
         final String jwtToken = jwtUtility.generateToken(user);
