@@ -32,17 +32,12 @@ public class Profile {
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @Column(name = "biography", length = 200)
-    private String biography;
+//    @Column(name = "country", length = 45)
+//    private String country;
+//
+//    @Column(name = "city", length = 45)
+//    private String city;
 
-    @Column(name = "country", length = 45)
-    private String country;
-
-    @Column(name = "city", length = 45)
-    private String city;
-
-    @Column(name = "phone_number", length = 15)
-    private String phoneNumber;
 
     public Profile(User user, String firstName, String lastName, LocalDate birthDate) {
         this.user = user;

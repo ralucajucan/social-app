@@ -11,8 +11,8 @@ import java.time.Instant;
 @AllArgsConstructor
 public class MessageDTO {
     private Long id;
-    private Long senderId;
-    private Long receiverId;
+    private String sender;
+    private String receiver;
     private String text;
     private Instant createdOn;
     private Instant updatedOn;

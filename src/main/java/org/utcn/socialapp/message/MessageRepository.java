@@ -9,7 +9,7 @@ import org.utcn.socialapp.user.User;
 import java.util.List;
 
 @Repository
-public interface MessageRepository extends JpaRepository<Message, Long> {
+public interface MessageRepository extends JpaRepository<Message, MessagePK> {
     Long countAllBySenderAndReceiver(User sender, User receiver);
 
     @Query("select m from Message m where ((m.sender=?1 and m.receiver=?2) or (m.sender=?2 and m.receiver=?1))")
