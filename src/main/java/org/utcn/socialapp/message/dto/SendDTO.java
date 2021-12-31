@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -18,6 +19,7 @@ public class SendDTO {
 
     public boolean requiredMatchNull() {
         return Stream.of(receiver)
-                     .anyMatch(Objects::isNull);
+                     .anyMatch(Objects::isNull)
+                || Stream.of(receiver).anyMatch(s -> !StringUtils.hasLength(s));
     }
 }

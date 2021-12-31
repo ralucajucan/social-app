@@ -14,6 +14,6 @@ public class MessageDTO {
     private String sender;
     private String receiver;
     private String text;
-    private Instant createdOn;
-    private Instant updatedOn;
+    private String createdOn;
+    private String updatedOn;
 }

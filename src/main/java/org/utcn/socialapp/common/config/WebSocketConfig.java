@@ -10,7 +10,6 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -21,26 +20,7 @@ import org.utcn.socialapp.auth.jwt.JWTUtility;
 import org.utcn.socialapp.user.User;
 import org.utcn.socialapp.user.UserService;
 
-//@Configuration
-//@EnableWebSocketMessageBroker
-//public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-//    @Override
-//    public void registerStompEndpoints(StompEndpointRegistry registry) {
-//        registry
-//                .addEndpoint("/api/message")
-//                .setAllowedOriginPatterns("*");
-//    }
-//
-//    @Override
-//    public void configureMessageBroker(MessageBrokerRegistry registry) {
-//        registry
-//                .setApplicationDestinationPrefixes("/ws")
-//                .enableSimpleBroker("/topic");
-//    }
-//}
-
 @Configuration
-@EnableAsync
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -51,9 +31,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // example: '/api/message'?
-        config.enableSimpleBroker("/topic","/queue");
+        config.enableSimpleBroker("/topic", "/queue");
         config.setApplicationDestinationPrefixes("/api");
-//        config.setUserDestinationPrefix("/user/");
     }
 
     @Override
@@ -61,11 +40,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // -> ws://localhost:8080
         registry
                 .addEndpoint("/ws")
-                .setAllowedOrigins("*");
-//        registry
-//                .addEndpoint("/ws")
-//                .setAllowedOrigins("*") //http://localhost:4200
-//                .withSockJS();
+                .setAllowedOrigins("http://localhost:4200");
     }
 
     @Override

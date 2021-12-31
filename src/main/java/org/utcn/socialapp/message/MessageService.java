@@ -6,21 +6,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.utcn.socialapp.common.exception.BusinessException;
-import org.utcn.socialapp.message.dto.ChatDTO;
 import org.utcn.socialapp.message.dto.MessageDTO;
 import org.utcn.socialapp.message.dto.SendDTO;
 import org.utcn.socialapp.user.User;
 import org.utcn.socialapp.user.UserRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.utcn.socialapp.common.exception.ClientErrorResponse.BAD_REQUEST;
-import static org.utcn.socialapp.common.exception.ClientErrorResponse.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -37,17 +37,17 @@ public class MessageService {
                 message.getSender().getEmail(),
                 message.getReceiver().getEmail(),
                 message.getText(),
-                message.getAudit().getCreatedOn(),
-                message.getAudit().getUpdatedOn()
+                message.getAudit().getCreatedOn().toString(),
+                message.getAudit().getUpdatedOn().toString()
         );
     }
 
-    public List<String> getUserList(){
+    public List<String> getUserList() {
         return simpUserRegistry.getUsers().stream().map(
                 user -> user.getName()).collect(Collectors.toList());
     }
 
-    public void sendUserList(){
+    public void sendUserList() {
         List<String> usersList = getUserList();
         usersList.stream().forEach(
                 user -> simpMessagingTemplate.convertAndSendToUser(
@@ -59,7 +59,7 @@ public class MessageService {
 
     @Transactional
     public void sendToUser(String principalEmail, SendDTO sendDTO) throws BusinessException {
-        if (!StringUtils.hasLength(principalEmail) || sendDTO.requiredMatchNull()){
+        if (!StringUtils.hasLength(principalEmail) || sendDTO.requiredMatchNull()) {
             throw new BusinessException(BAD_REQUEST);
         }
         User sender = userRepository.findByEmail(principalEmail);
@@ -68,30 +68,34 @@ public class MessageService {
         Long messageId = messageRepository.countAllBySenderAndReceiver(sender, receiver);
         Message message = new Message(messageId, sender, receiver, sendDTO.getText());
         messageRepository.save(message);
-        MessageDTO messageDTO= newMessageDTO(messageRepository.findById(message.getMessagePK())
+        MessageDTO messageDTO = newMessageDTO(messageRepository.findById(message.getMessagePK())
                 .orElseThrow(() -> new BusinessException(BAD_REQUEST)));
         simpMessagingTemplate.convertAndSendToUser(
                 messageDTO.getReceiver(),
-                "/queue/greetings",
+                "/queue/conv-"+messageDTO.getSender(),
+                messageDTO);
+        simpMessagingTemplate.convertAndSendToUser(
+                messageDTO.getSender(),
+                "/queue/conv-"+messageDTO.getReceiver(),
                 messageDTO);
     }
 
-    public List<MessageDTO> getConversation(ChatDTO chatDTO) throws BusinessException {
-        if (chatDTO.requiredMatchNull() || chatDTO.pageIsNegative()) {
+    public List<MessageDTO> getConversation(String senderEmail, int page) throws BusinessException {
+        if (Objects.isNull(senderEmail) || page < 0) {
             throw new BusinessException(BAD_REQUEST);
         }
-        User sender = userRepository
-                .findById(chatDTO.getSender())
-                .orElseThrow(() -> new BusinessException(NOT_FOUND));
-        User receiver = userRepository
-                .findById(chatDTO.getReceiver())
-                .orElseThrow(() -> new BusinessException(NOT_FOUND));
-        Pageable pageable = PageRequest.of(chatDTO.getPage(), MESSAGE_COUNT, Sort.by("sender").descending());
+        User sender = userRepository.findByEmail(senderEmail);
+        User receiver = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Pageable pageable = PageRequest.of(page, MESSAGE_COUNT, Sort.by("sender").descending());
 
         return messageRepository
                 .findConversation(sender, receiver, pageable)
                 .stream()
                 .map(message -> newMessageDTO(message))
                 .collect(Collectors.toList());
+    }
+
+    public void sendError(String principalEmail, Exception e){
+        simpMessagingTemplate.convertAndSendToUser(principalEmail, "queue/error", e.getMessage());
     }
 }
