@@ -3,10 +3,12 @@ package org.utcn.socialapp.message.attachment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 // LESS THAN 16 MB
 @Getter
 @NoArgsConstructor
+@Document()
 public class Attachment {
     @Id
     public String id;

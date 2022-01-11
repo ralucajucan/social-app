@@ -4,9 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.simp.user.SimpUser;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +20,7 @@ import org.utcn.socialapp.common.exception.BusinessException;
 import org.utcn.socialapp.message.dto.DraftDTO;
 import org.utcn.socialapp.message.dto.MessageDTO;
 import org.utcn.socialapp.message.dto.SendDTO;
+import org.utcn.socialapp.message.dto.ContactDTO;
 import org.utcn.socialapp.user.User;
 import org.utcn.socialapp.user.UserRepository;
 
@@ -24,7 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.utcn.socialapp.common.exception.ClientErrorResponse.BAD_REQUEST;
-import static org.utcn.socialapp.message.MessageStatus.*;
+import static org.utcn.socialapp.message.MessageStatus.DRAFT;
+import static org.utcn.socialapp.message.MessageStatus.SENT;
 
 @Service
 @RequiredArgsConstructor
@@ -34,18 +41,27 @@ public class MessageService {
     private final UserRepository userRepository;
     private final SimpUserRegistry simpUserRegistry;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final MessageChannel clientOutboundChannel;
 
     public List<String> getConnectedUserList() {
         return simpUserRegistry.getUsers().stream().map(SimpUser::getName).collect(Collectors.toList());
     }
 
-    public List<String> getUserList() {
-        return userRepository.findAll().stream().map(User::getEmail).collect(Collectors.toList());
+    public List<ContactDTO> getUserList() {
+        return userRepository.findAll().stream().map(user -> new ContactDTO(
+                        user.getEmail(),
+                        user.getProfile().getFirstName() + " " + user.getProfile().getLastName()
+                )
+        ).collect(Collectors.toList());
     }
 
     public void sendUserList() {
-        List<String> usersList = getConnectedUserList();
-        usersList.forEach(
+        List<ContactDTO> usersList = getUserList();
+        List<String> connectedUsersList = getConnectedUserList();
+        usersList.forEach(user -> user.setOnline(
+                connectedUsersList.stream().anyMatch(user.getEmail()::equals)
+        ));
+        connectedUsersList.forEach(
                 user -> simpMessagingTemplate.convertAndSendToUser(
                         user,
                         "/queue/list",
@@ -53,7 +69,8 @@ public class MessageService {
         );
     }
 
-    private MessageDTO saveMessage(String principalEmail, String userEmail, String text, String attachmentIds, MessageStatus status) throws BusinessException{
+    private MessageDTO saveMessage(String principalEmail, String userEmail, String text, String attachmentIds,
+                                   MessageStatus status) throws BusinessException {
         if (!StringUtils.hasLength(principalEmail) || Stream.of(userEmail).anyMatch(Objects::isNull)
                 || Stream.of(userEmail).anyMatch(s -> !StringUtils.hasLength(s))) {
             throw new BusinessException(BAD_REQUEST);
@@ -69,17 +86,21 @@ public class MessageService {
                 attachmentIds,
                 status
         );
-        message = messageRepository.save(message);
-        if (status == SENT) {
-            message.setSentOn(message.getAudit().getUpdatedOn());
+        try {
             message = messageRepository.save(message);
+            if (status == SENT) {
+                message.setSentOn(message.getAudit().getUpdatedOn());
+                message = messageRepository.save(message);
+            }
+        } catch (Exception e) {
+            throw new BusinessException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new MessageDTO(message);
     }
 
-    public MessageDTO saveDraft(String principalEmail, DraftDTO draftDTO) throws BusinessException{
+    public MessageDTO saveDraft(String principalEmail, DraftDTO draftDTO) throws BusinessException {
         Message message = messageRepository.findByStatus(DRAFT);
-        if(Objects.isNull(message)){
+        if (Objects.isNull(message)) {
             return saveMessage(
                     principalEmail,
                     draftDTO.getUser(),
@@ -89,7 +110,7 @@ public class MessageService {
             );
         }
         message.setText(draftDTO.getText());
-        message.setAttachmentIds(message.getAttachmentIds().concat(","+draftDTO.getAttachmentId()));
+        message.setAttachmentIds(message.getAttachmentIds().concat("," + draftDTO.getAttachmentId()));
         messageRepository.save(message);
         return new MessageDTO(message);
     }
@@ -130,8 +151,11 @@ public class MessageService {
                 .collect(Collectors.toList());
     }
 
-    public void sendError(String principalEmail, Exception e) {
-        simpMessagingTemplate.convertAndSendToUser(principalEmail, "queue/error", e.getMessage());
+    public void sendError(String sessionId, Exception e) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.create(StompCommand.ERROR);
+        headerAccessor.setMessage(e.getMessage());
+        headerAccessor.setSessionId(sessionId);
+        this.clientOutboundChannel.send(MessageBuilder.createMessage(new byte[0], headerAccessor.getMessageHeaders()));
     }
 
     public void updateSentAsReceived(String receiverEmail) {

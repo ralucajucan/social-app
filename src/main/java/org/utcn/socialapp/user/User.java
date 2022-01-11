@@ -11,6 +11,7 @@ import org.utcn.socialapp.auth.refreshToken.RefreshToken;
 import org.utcn.socialapp.common.utils.Audit;
 import org.utcn.socialapp.post.Post;
 import org.utcn.socialapp.post.reaction.Reaction;
+import org.utcn.socialapp.profile.Profile;
 import org.utcn.socialapp.user.interaction.Request;
 
 import javax.persistence.*;
@@ -50,6 +51,9 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private boolean locked = false;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Profile profile;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private RefreshToken refreshToken;

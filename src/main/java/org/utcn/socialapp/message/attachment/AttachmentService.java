@@ -14,7 +14,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
 import org.utcn.socialapp.common.exception.BusinessException;
-import org.utcn.socialapp.message.dto.EmptyFileDTO;
 import org.utcn.socialapp.message.dto.FileDTO;
 
 import java.io.IOException;
@@ -114,17 +113,17 @@ public class AttachmentService {
         return fileList;
     }
 
-    public List<EmptyFileDTO> getFilesWithoutContent(String ids) {
+    public List<FileDTO> getFilesWithoutContent(String ids) {
         if (!StringUtils.hasLength(ids)) {
             return null;
         }
-        List<EmptyFileDTO> fileList = attachmentRepository
+        List<FileDTO> fileList = attachmentRepository
                 .findByMultipleIds(getIdList(ids, true).toArray(String[]::new))
                 .stream()
-                .map(EmptyFileDTO::new).collect(Collectors.toList());
+                .map(FileDTO::new).collect(Collectors.toList());
         List<GridFSFile> gridFSFileList = new ArrayList<>();
         template.find(new Query(Criteria.where("_id").in(getIdList(ids, false)))).into(gridFSFileList);
-        fileList.addAll(gridFSFileList.stream().map(EmptyFileDTO::new).collect(Collectors.toList()));
+        fileList.addAll(gridFSFileList.stream().map(FileDTO::new).collect(Collectors.toList()));
         return fileList;
     }
 }
