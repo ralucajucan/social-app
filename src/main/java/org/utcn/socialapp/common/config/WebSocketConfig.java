@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-import org.utcn.socialapp.auth.jwt.JWTUtility;
+import org.utcn.socialapp.auth.jwt.JwtUtility;
 import org.utcn.socialapp.user.User;
 import org.utcn.socialapp.user.UserService;
 
@@ -25,7 +25,7 @@ import org.utcn.socialapp.user.UserService;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final JWTUtility jwtUtility;
+    private final JwtUtility jwtUtility;
     private final UserService userService;
 
     @Override
@@ -38,9 +38,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // -> ws://localhost:8080
-        registry
-                .addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:4200");
+        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:4200");
     }
 
     @Override

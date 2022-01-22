@@ -20,7 +20,7 @@ public class Message {
     @Embedded
     private final Audit audit = new Audit();
 
-    private Instant sentOn;
+    private boolean edited = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("senderId")
@@ -41,9 +41,9 @@ public class Message {
     private byte[] text;
 
     /**
-     *     Stored attachments MongoDB ObjectIds
-     *     separator is ",", if file > 16 MB an "!" will be present before id
-     *     maximum 9 ids -> 1 id = 24 char
+     * Stored attachments MongoDB ObjectIds
+     * separator is ",", if file > 16 MB an "!" will be present before id
+     * maximum 9 ids -> 1 id = 24 char
      */
     private String attachmentIds;
 
@@ -73,7 +73,11 @@ public class Message {
         this.attachmentIds = attachmentIds;
     }
 
-    public void setSentOn(Instant sentOn) {
-        this.sentOn = sentOn;
+    public void setEdited(boolean editedOn) {
+        this.edited = editedOn;
+    }
+
+    public void setStatus(MessageStatus status) {
+        this.status = status;
     }
 }

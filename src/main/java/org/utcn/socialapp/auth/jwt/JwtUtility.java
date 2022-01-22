@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
-public class JWTUtility implements Serializable {
+public class JwtUtility implements Serializable {
 
     private static final long serialVersionUID = 234234523523L;
 

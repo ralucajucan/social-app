@@ -1,4 +1,4 @@
-package org.utcn.socialapp.user.interaction;
+package org.utcn.socialapp.user.request;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

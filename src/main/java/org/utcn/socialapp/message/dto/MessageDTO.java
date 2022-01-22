@@ -7,7 +7,6 @@ import org.utcn.socialapp.message.Message;
 import org.utcn.socialapp.message.MessageStatus;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -20,8 +19,8 @@ public class MessageDTO {
     private String attachmentIds;
     private List<FileDTO> attachments;
     private MessageStatus status;
+    private boolean edited;
     private String createdOn;
-    private String sentOn;
     private String updatedOn;
 
     public MessageDTO(Message message) {
@@ -32,14 +31,11 @@ public class MessageDTO {
         this.attachmentIds = message.getAttachmentIds();
         this.attachments = null;
         this.status = message.getStatus();
+        this.edited = message.isEdited();
         this.createdOn = message.getAudit().getCreatedOn().toString();
-        this.sentOn = message.getSentOn().toString();
         this.updatedOn = message.getAudit().getUpdatedOn().toString();
     }
 
-//    public void setAttachments(List<FileDTO> attachments) {
-//        this.attachments = attachments.stream().map(FileDTO::new).collect(Collectors.toList());
-//    }
     public void setAttachments(List<FileDTO> attachments) {
         this.attachments = attachments;
     }

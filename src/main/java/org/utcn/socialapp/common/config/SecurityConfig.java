@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.utcn.socialapp.auth.jwt.JWTFilter;
+import org.utcn.socialapp.auth.jwt.JwtFilter;
 
 import static org.utcn.socialapp.user.Role.ADMIN;
 import static org.utcn.socialapp.user.Role.USER;
@@ -20,7 +20,7 @@ import static org.utcn.socialapp.user.Role.USER;
 @EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final JWTFilter jwtFilter;
+    private final JwtFilter jwtFilter;
 
     @Bean
     @Override
@@ -39,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf()
             .disable()
-            .cors();
+                .cors();
         http.sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests()

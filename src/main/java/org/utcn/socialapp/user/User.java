@@ -9,10 +9,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.utcn.socialapp.auth.refreshToken.RefreshToken;
 import org.utcn.socialapp.common.utils.Audit;
-import org.utcn.socialapp.post.Post;
-import org.utcn.socialapp.post.reaction.Reaction;
-import org.utcn.socialapp.profile.Profile;
-import org.utcn.socialapp.user.interaction.Request;
+import org.utcn.socialapp.user.profile.Profile;
+import org.utcn.socialapp.user.request.Request;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -57,12 +55,6 @@ public class User implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private RefreshToken refreshToken;
-
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reaction> reactions = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Request> requestsSent = new ArrayList<>();

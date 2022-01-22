@@ -84,17 +84,21 @@ public class MessageController {
             messageService.sendError(sessionId, new BusinessException(UNAUTHORIZED));
         } else {
             messageService.updateSentAsReceived(principal.getName());
-            messageService.sendUserList();
         }
     }
 
     @EventListener({SessionDisconnectEvent.class})
     public void onDisconnect() {
-        messageService.sendUserList();
+        messageService.sendUserList(false);
     }
 
     @MessageMapping("/refresh-connected")
     public void refreshUserList() {
-        messageService.sendUserList();
+        messageService.sendUserList(true);
+    }
+
+    @MessageMapping("/update-message")
+    public void updateMessage(){
+
     }
 }

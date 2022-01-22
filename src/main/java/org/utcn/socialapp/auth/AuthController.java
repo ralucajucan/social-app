@@ -4,8 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.utcn.socialapp.auth.jwt.JWTResponse;
-import org.utcn.socialapp.auth.registration.RegisterDTO;
+import org.utcn.socialapp.auth.dto.*;
 import org.utcn.socialapp.auth.registration.RegisterToken;
 import org.utcn.socialapp.common.exception.BusinessException;
 import org.utcn.socialapp.user.User;
@@ -17,8 +16,8 @@ public class AuthController {
     public final AuthService authService;
 
     @PostMapping()
-    public ResponseEntity<AuthResDTO> authenticate(@RequestBody AuthDTO authDTO) throws BusinessException {
-        return ResponseEntity.ok(authService.authenticate(authDTO));
+    public ResponseEntity<AuthDTO> authenticate(@RequestBody CredentialsDTO credentialsDTO) throws BusinessException {
+        return ResponseEntity.ok(authService.authenticate(credentialsDTO));
     }
 
     @PostMapping("/register")
@@ -32,15 +31,23 @@ public class AuthController {
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<JWTResponse> refresh(@RequestParam String token) throws BusinessException {
+    public ResponseEntity<JwtDTO> refresh(@RequestParam String token) throws BusinessException {
         return ResponseEntity.ok(authService.refreshJwtToken(token));
     }
-
 
     @DeleteMapping("/logout")
     public ResponseEntity<User> logout(@RequestParam Long userId) throws BusinessException {
         authService.logout(userId);
-        return ResponseEntity.noContent()
-                             .build();
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/resend")
+    public ResponseEntity<?> resendRegister(@RequestParam String email) throws BusinessException{
+        return ResponseEntity.ok(authService.resendToken(email));
+    }
+
+    @GetMapping("/resend-password")
+    public ResponseEntity<?> resendPassword(@RequestParam String email) throws BusinessException{
+        return ResponseEntity.ok(authService.resendPassword(email));
     }
 }

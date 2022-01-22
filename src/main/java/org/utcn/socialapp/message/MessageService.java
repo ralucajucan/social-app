@@ -17,10 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.utcn.socialapp.common.exception.BusinessException;
+import org.utcn.socialapp.message.dto.ContactDTO;
 import org.utcn.socialapp.message.dto.DraftDTO;
 import org.utcn.socialapp.message.dto.MessageDTO;
 import org.utcn.socialapp.message.dto.SendDTO;
-import org.utcn.socialapp.message.dto.ContactDTO;
 import org.utcn.socialapp.user.User;
 import org.utcn.socialapp.user.UserRepository;
 
@@ -30,8 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.utcn.socialapp.common.exception.ClientErrorResponse.BAD_REQUEST;
-import static org.utcn.socialapp.message.MessageStatus.DRAFT;
-import static org.utcn.socialapp.message.MessageStatus.SENT;
+import static org.utcn.socialapp.message.MessageStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +46,15 @@ public class MessageService {
         return simpUserRegistry.getUsers().stream().map(SimpUser::getName).collect(Collectors.toList());
     }
 
-    public List<ContactDTO> getUserList() {
+    public List<ContactDTO> getUserList(boolean withNewMessages) {
+        if (withNewMessages) {
+            return userRepository.findAll().stream().map(user -> new ContactDTO(
+                            user.getEmail(),
+                            user.getProfile().getFirstName() + " " + user.getProfile().getLastName(),
+                            messageRepository.countSenderExcludeStatus(user, READ)
+                    )
+            ).collect(Collectors.toList());
+        }
         return userRepository.findAll().stream().map(user -> new ContactDTO(
                         user.getEmail(),
                         user.getProfile().getFirstName() + " " + user.getProfile().getLastName()
@@ -55,8 +62,8 @@ public class MessageService {
         ).collect(Collectors.toList());
     }
 
-    public void sendUserList() {
-        List<ContactDTO> usersList = getUserList();
+    public void sendUserList(boolean withNewMessages) {
+        List<ContactDTO> usersList = getUserList(withNewMessages);
         List<String> connectedUsersList = getConnectedUserList();
         usersList.forEach(user -> user.setOnline(
                 connectedUsersList.stream().anyMatch(user.getEmail()::equals)
@@ -89,7 +96,6 @@ public class MessageService {
         try {
             message = messageRepository.save(message);
             if (status == SENT) {
-                message.setSentOn(message.getAudit().getUpdatedOn());
                 message = messageRepository.save(message);
             }
         } catch (Exception e) {
@@ -126,12 +132,12 @@ public class MessageService {
         );
         simpMessagingTemplate.convertAndSendToUser(
                 messageDTO.getReceiver(),
-                "/queue/conv-" + messageDTO.getSender(),
+                "/queue/conv",
                 messageDTO);
         if (!messageDTO.getReceiver().equals(messageDTO.getSender())) {
             simpMessagingTemplate.convertAndSendToUser(
                     messageDTO.getSender(),
-                    "/queue/conv-" + messageDTO.getReceiver(),
+                    "/queue/conv",
                     messageDTO);
         }
     }
@@ -144,9 +150,19 @@ public class MessageService {
         User principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, MESSAGE_COUNT, Sort.by("audit.createdOn").descending());
 
+        List<Message> messages = messageRepository.findConversation(user, principal, pageable);
+        messageRepository.updateReceivedAsRead(user);
         return messageRepository
                 .findConversation(user, principal, pageable)
                 .stream()
+                .map(message -> {
+                    if (message.getStatus() == RECEIVED) {
+                        message.setStatus(READ);
+                        messageRepository.save(message);
+                        message.setStatus(RECEIVED);
+                    }
+                    return message;
+                })
                 .map(MessageDTO::new)
                 .collect(Collectors.toList());
     }

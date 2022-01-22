@@ -26,9 +26,12 @@ public interface MessageRepository extends JpaRepository<Message, MessagePK> {
     @Transactional
     @Modifying
     @Query("update Message m set m.status=org.utcn.socialapp.message.MessageStatus.READ " +
-            "where (m.sender=?1 and m.receiver=?2 and m.status=org.utcn.socialapp.message.MessageStatus.RECEIVED)")
-    void updateReceivedAsRead(User sender, User receiver);
+            "where (m.receiver=?1 and m.status=org.utcn.socialapp.message.MessageStatus.RECEIVED)")
+    void updateReceivedAsRead(User receiver);
 
     Message findByStatus(MessageStatus status);
+
+    @Query("select count(m) from Message m where m.sender=?1 and m.status<>?2")
+    Long countSenderExcludeStatus(User user, MessageStatus messageStatus);
 }
 

@@ -56,4 +56,12 @@ public class RegisterToken {
     public User getUser() {
         return user;
     }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public void setExpiration(Instant expiration) {
+        this.expiration = expiration;
+    }
 }
