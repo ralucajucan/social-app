@@ -13,7 +13,8 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Profile {
+public class
+Profile {
     @Id
     @Setter(AccessLevel.NONE)
     private Long id;

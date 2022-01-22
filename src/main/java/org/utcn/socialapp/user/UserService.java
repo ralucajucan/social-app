@@ -1,6 +1,9 @@
 package org.utcn.socialapp.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -9,9 +12,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.utcn.socialapp.common.exception.BusinessException;
-import org.utcn.socialapp.user.dto.BasicDTO;
+import org.utcn.socialapp.user.dto.EditDTO;
 import org.utcn.socialapp.user.dto.PasswordDTO;
+import org.utcn.socialapp.user.dto.UserDTO;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -44,12 +49,6 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    public List<BasicDTO> getUsers() {
-        return userRepository.findAll().stream().map(user -> new BasicDTO(user.getId(),
-                user.getProfile().getFirstName() + " " + user.getProfile().getLastName()
-        )).collect(Collectors.toList());
-    }
-
     public void changePassword(PasswordDTO passwordDTO) throws BusinessException {
         if (Objects.isNull(passwordDTO) || passwordDTO.requiredAnyMatchNull()) {
             throw new BusinessException(BAD_REQUEST);
@@ -65,5 +64,50 @@ public class UserService implements UserDetailsService {
         } catch (Exception e) {
             throw new BusinessException(e.getMessage(), HttpStatus.NOT_MODIFIED);
         }
+    }
+
+    public void changeSelected(EditDTO editDTO) throws BusinessException {
+        if (Objects.isNull(editDTO) || editDTO.requiredAnyMatchNull()) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        User user = userRepository.findById(editDTO.getId()).orElseThrow(() -> new BusinessException(NOT_FOUND));
+        switch (editDTO.getSelected()) {
+            case "firstName": {
+                user.getProfile().setFirstName(editDTO.getChange());
+                break;
+            }
+            case "lastName": {
+                user.getProfile().setLastName(editDTO.getChange());
+                break;
+            }
+            case "birthDate": {
+                user.getProfile().setBirthDate(LocalDate.parse(editDTO.getChange()));
+                break;
+            }
+            case "biography": {
+                user.getProfile().setBiography(editDTO.getChange());
+                break;
+            }
+            default: {
+                throw new BusinessException(BAD_REQUEST);
+            }
+        }
+        try {
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new BusinessException(e.getMessage(), HttpStatus.NOT_MODIFIED);
+        }
+    }
+
+    public List<UserDTO> getUserPage(int page, int count) throws BusinessException {
+        if (page < 0 || count < 1) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        Pageable pageable = PageRequest.of(page, count, Sort.by("email").ascending());
+        return userRepository.findAllByPage(pageable).stream().map(UserDTO::new).collect(Collectors.toList());
+    }
+
+    public void deleteUser(Long id) {
+
     }
 }

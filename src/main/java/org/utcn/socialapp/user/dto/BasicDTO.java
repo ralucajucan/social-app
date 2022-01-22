@@ -1,11 +1,13 @@
 package org.utcn.socialapp.user.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class BasicDTO {
-    public Long id;
-    public String name;
+    private Long id;
+    private String name;
 }

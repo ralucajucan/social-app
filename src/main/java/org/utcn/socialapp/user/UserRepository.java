@@ -5,8 +5,10 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.utcn.socialapp.user.profile.Profile;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -18,4 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT p FROM Profile p WHERE p.id= :id")
     Optional<Profile> findProfileByUserId(Long id);
+
+    @Query("select u from User u")
+    List<User> findAllByPage(Pageable pageable);
 }
