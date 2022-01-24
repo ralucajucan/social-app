@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.utcn.socialapp.user.User;
 
-import java.time.LocalDate;
-
 @Getter
 @NoArgsConstructor
 public class AuthDTO extends JwtDTO {

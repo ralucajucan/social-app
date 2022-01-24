@@ -22,8 +22,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserPage(page,count));
     }
 
-
-
     @PostMapping("/password")
     public ResponseEntity<?> changePassword(@RequestBody final PasswordDTO passwordDTO) throws BusinessException {
         userService.changePassword(passwordDTO);

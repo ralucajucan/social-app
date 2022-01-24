@@ -1,4 +1,4 @@
-package org.utcn.socialapp.auth.dto;
+package org.utcn.socialapp.auth.registration;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

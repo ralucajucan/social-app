@@ -17,7 +17,7 @@ import static org.utcn.socialapp.user.Role.ADMIN;
 import static org.utcn.socialapp.user.Role.USER;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+//@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtFilter jwtFilter;

@@ -7,7 +7,7 @@ import org.utcn.socialapp.user.User;
 import java.util.Optional;
 
 @Repository
-public interface RegisterTokenRepository extends JpaRepository<RegisterToken, Long> {
-    Optional<RegisterToken> findByToken(String token);
-    Optional<RegisterToken> findByUser(User user);
+public interface RegisterRepository extends JpaRepository<Register, Long> {
+    Optional<Register> findByToken(String token);
+    Optional<Register> findByUser(User user);
 }

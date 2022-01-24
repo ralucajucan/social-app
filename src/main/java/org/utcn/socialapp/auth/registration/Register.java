@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.time.Instant;
 
 @Entity
-public class RegisterToken {
+public class Register {
     @Id
     private Long id;
 
@@ -24,10 +24,10 @@ public class RegisterToken {
 
     private Instant confirmation;
 
-    public RegisterToken() {
+    public Register() {
     }
 
-    public RegisterToken(User user, String token, Instant expiration) {
+    public Register(User user, String token, Instant expiration) {
         this.user = user;
         this.token = token;
         this.expiration = expiration;

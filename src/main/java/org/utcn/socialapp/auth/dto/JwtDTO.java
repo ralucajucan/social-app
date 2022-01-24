@@ -1,11 +1,8 @@
 package org.utcn.socialapp.auth.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.utcn.socialapp.user.User;
-
-import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor

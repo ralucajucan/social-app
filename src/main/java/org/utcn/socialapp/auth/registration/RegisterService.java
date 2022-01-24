@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.utcn.socialapp.auth.dto.RegisterDTO;
+import org.springframework.util.StringUtils;
 import org.utcn.socialapp.common.exception.BusinessException;
 import org.utcn.socialapp.email.EmailService;
 import org.utcn.socialapp.email.EmailValidator;
@@ -32,7 +32,7 @@ public class RegisterService {
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final RegisterTokenRepository registerTokenRepository;
+    private final RegisterRepository registerRepository;
 
     /**
      * REGISTRATION:
@@ -43,7 +43,7 @@ public class RegisterService {
      * @return Token
      * @throws BusinessException with ClientErrorResponse as param
      */
-    public RegisterToken register(RegisterDTO registerDTO) throws BusinessException {
+    public Register register(RegisterDTO registerDTO) throws BusinessException {
         // Validate input:
         if (Objects.isNull(registerDTO) || registerDTO.anyMatchNull()) throw new BusinessException(BAD_REQUEST);
         if (Objects.nonNull(userRepository.findByEmail(registerDTO.getEmail().trim()))) {
@@ -60,15 +60,15 @@ public class RegisterService {
         profileRepository.save(profile);
 
         // Send confirmation token:
-        RegisterToken registerToken = new RegisterToken(
+        Register register = new Register(
                 user,
                 UUID.randomUUID().toString(),
                 Instant.now().plus(REGISTER_TOKEN_VALIDITY_MINS, ChronoUnit.MINUTES)
         );
-        registerTokenRepository.save(registerToken);
+        registerRepository.save(register);
 
         // Send email:
-        String link = "http://localhost:8080/api/auth/register/confirm?token=" + registerToken.getToken();
+        String link = "http://localhost:8080/api/auth/register/confirm?token=" + register.getToken();
         emailService.sendEmail(registerDTO.getEmail().trim(),
                 emailService.buildEmail(
                         "Sunteti la un pas distanta de inregistrare, " + registerDTO.getFirstName(),
@@ -76,44 +76,47 @@ public class RegisterService {
                         "Link activare",
                         link));
 
-        return registerToken;
+        return register;
     }
 
     @Transactional
     public String enableUserWithToken(String uuid) throws BusinessException {
-        RegisterToken registerToken = registerTokenRepository.findByToken(uuid)
+        Register register = registerRepository.findByToken(uuid)
                 .orElseThrow(() -> new BusinessException(NOT_FOUND));
-        if (Objects.nonNull(registerToken.getConfirmation())) {
+        if (Objects.nonNull(register.getConfirmation())) {
             throw new BusinessException(CONFLICT_TOKEN);
         }
-        Instant expiration = registerToken.getExpiration();
+        Instant expiration = register.getExpiration();
         if (expiration.isBefore(Instant.now())) {
             throw new BusinessException(EXPIRED_TOKEN);
         }
-        registerToken.setConfirmation(Instant.now());
-        registerTokenRepository.save(registerToken);
-        userRepository.enableUser(registerToken.getUser().getId());
+        register.setConfirmation(Instant.now());
+        registerRepository.save(register);
+        userRepository.enableUser(register.getUser().getId());
         return "Confirmed!";
     }
 
-    public boolean resendRegistrationToken(String email) throws BusinessException {
-        User user = userRepository.findByEmail(email.trim());
+    public boolean resetRegisterToken(String email) throws BusinessException {
+        if (!StringUtils.hasLength(email)) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        User user = userRepository.findByEmail(email);
         if (Objects.isNull(user)) {
             throw new BusinessException(NOT_FOUND);
         }
         if (user.isEnabled()) {
             throw new BusinessException(NOT_ALLOWED); //already enabled
         }
-        RegisterToken registerToken = registerTokenRepository
+        Register register = registerRepository
                 .findByUser(user).orElseThrow(() -> new BusinessException(NOT_FOUND));
-        registerToken.setToken(UUID.randomUUID().toString());
-        registerToken.setExpiration(Instant.now().plus(REGISTER_TOKEN_VALIDITY_MINS, ChronoUnit.MINUTES));
+        register.setToken(UUID.randomUUID().toString());
+        register.setExpiration(Instant.now().plus(REGISTER_TOKEN_VALIDITY_MINS, ChronoUnit.MINUTES));
         try {
-            registerTokenRepository.save(registerToken);
+            registerRepository.save(register);
         }catch(Exception e){
             throw new BusinessException(e.getMessage(), HttpStatus.FAILED_DEPENDENCY);
         }
-        String link = "http://localhost:8080/api/auth/register/confirm?token=" + registerToken.getToken();
+        String link = "http://localhost:8080/api/auth/register/confirm?token=" + register.getToken();
         emailService.sendEmail(user.getEmail(), emailService.buildEmail(
                 "Sunteti la un pas distanta de inregistrare, " + user.getProfile().getFirstName(),
                 "Confirmati adresa dand click mai jos:",
