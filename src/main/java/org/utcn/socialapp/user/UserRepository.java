@@ -21,6 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT p FROM Profile p WHERE p.id= :id")
     Optional<Profile> findProfileByUserId(Long id);
 
-    @Query("select u from User u")
-    List<User> findAllByPage(Pageable pageable);
+    @Query("select u from User u where u.enabled=true and u.locked=false")
+    List<User> findAllActive();
 }

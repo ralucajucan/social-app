@@ -1,4 +1,4 @@
-package org.utcn.socialapp.auth.refreshToken;
+package org.utcn.socialapp.auth.refreshtoken;
 
 import org.utcn.socialapp.user.User;
 

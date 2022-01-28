@@ -8,13 +8,11 @@ import org.utcn.socialapp.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class
-Profile {
+@Entity
+public class Profile {
     @Id
     @Setter(AccessLevel.NONE)
     private Long id;

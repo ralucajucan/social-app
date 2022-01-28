@@ -48,14 +48,14 @@ public class MessageService {
 
     public List<ContactDTO> getUserList(boolean withNewMessages) {
         if (withNewMessages) {
-            return userRepository.findAll().stream().map(user -> new ContactDTO(
+            return userRepository.findAllActive().stream().map(user -> new ContactDTO(
                             user.getEmail(),
                             user.getProfile().getFirstName() + " " + user.getProfile().getLastName(),
                             messageRepository.countSenderExcludeStatus(user, READ)
                     )
             ).collect(Collectors.toList());
         }
-        return userRepository.findAll().stream().map(user -> new ContactDTO(
+        return userRepository.findAllActive().stream().map(user -> new ContactDTO(
                         user.getEmail(),
                         user.getProfile().getFirstName() + " " + user.getProfile().getLastName()
                 )

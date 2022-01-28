@@ -7,8 +7,9 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.utcn.socialapp.auth.refreshToken.RefreshToken;
+import org.utcn.socialapp.auth.refreshtoken.RefreshToken;
 import org.utcn.socialapp.common.utils.Audit;
+import org.utcn.socialapp.message.Message;
 import org.utcn.socialapp.user.profile.Profile;
 import org.utcn.socialapp.user.request.Request;
 
@@ -55,6 +56,12 @@ public class User implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private RefreshToken refreshToken;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Message> messagesSent = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Message> messagesReceived = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Request> requestsSent = new ArrayList<>();

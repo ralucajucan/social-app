@@ -1,6 +1,7 @@
 package org.utcn.socialapp.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -15,6 +16,7 @@ import org.utcn.socialapp.common.exception.BusinessException;
 import org.utcn.socialapp.user.dto.EditDTO;
 import org.utcn.socialapp.user.dto.PasswordDTO;
 import org.utcn.socialapp.user.dto.UserDTO;
+import org.utcn.socialapp.user.dto.UserPageDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -88,6 +90,10 @@ public class UserService implements UserDetailsService {
                 user.getProfile().setBiography(editDTO.getChange());
                 break;
             }
+            case "locked":{
+                user.setLocked(Boolean.parseBoolean(editDTO.getChange()));
+                break;
+            }
             default: {
                 throw new BusinessException(BAD_REQUEST);
             }
@@ -99,16 +105,22 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public List<UserDTO> getUserPage(int page, int count) throws BusinessException {
+    public UserPageDTO getUserPage(int page, int count) throws BusinessException {
         if (page < 0 || count < 1) {
             throw new BusinessException(BAD_REQUEST);
         }
         Pageable pageable = PageRequest.of(page, count, Sort.by("email").ascending());
-        return userRepository.findAllByPage(pageable).stream().map(UserDTO::new).collect(Collectors.toList());
+        Page<User> userPage = userRepository.findAll(pageable);
+        List<UserDTO> users = userPage.getContent().stream().map(UserDTO::new).collect(Collectors.toList());
+        return new UserPageDTO(users, userPage.getTotalPages(), userPage.getTotalElements()) ;
     }
 
-    public void deleteUser(Long id) {
-
+    public void deleteUser(Long id) throws BusinessException {
+        try {
+            userRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new BusinessException(e.getMessage(), HttpStatus.NOT_MODIFIED);
+        }
     }
 
     public User findByEmail(String email){

@@ -68,12 +68,12 @@ public class RegisterService {
         registerRepository.save(register);
 
         // Send email:
-        String link = "http://localhost:8080/api/auth/register/confirm?token=" + register.getToken();
+        String link = "http://localhost:4200/register?token=" + register.getToken();
         emailService.sendEmail(registerDTO.getEmail().trim(),
                 emailService.buildEmail(
                         "Sunteti la un pas distanta de inregistrare, " + registerDTO.getFirstName(),
                         "Confirmati adresa dand click mai jos:",
-                        "Link activare",
+                        "Click pe link-ul de activare <-",
                         link));
 
         return register;
@@ -109,39 +109,24 @@ public class RegisterService {
         }
         Register register = registerRepository
                 .findByUser(user).orElseThrow(() -> new BusinessException(NOT_FOUND));
-        register.setToken(UUID.randomUUID().toString());
+        String token = UUID.randomUUID().toString();
+        while (registerRepository.findByToken(token).isPresent()) {
+            token = UUID.randomUUID().toString();
+        }
+        register.setToken(token);
         register.setExpiration(Instant.now().plus(REGISTER_TOKEN_VALIDITY_MINS, ChronoUnit.MINUTES));
         try {
             registerRepository.save(register);
         }catch(Exception e){
             throw new BusinessException(e.getMessage(), HttpStatus.FAILED_DEPENDENCY);
         }
-        String link = "http://localhost:8080/api/auth/register/confirm?token=" + register.getToken();
+        //http://localhost:8080/api/auth/register/confirm?token=
+        String link = "http://localhost:4200/register?token=" + register.getToken();
         emailService.sendEmail(user.getEmail(), emailService.buildEmail(
                 "Sunteti la un pas distanta de inregistrare, " + user.getProfile().getFirstName(),
                 "Confirmati adresa dand click mai jos:",
-                "Link activare",
+                "Click pe link-ul de activare <-",
                 link));
-        return true;
-    }
-
-    public boolean resendPassword(String email) throws BusinessException {
-        User user = userRepository.findByEmail(email.trim());
-        if (Objects.isNull(user)) {
-            throw new BusinessException(NOT_FOUND);
-        }
-        final String newPassword = UUID.randomUUID().toString().replaceAll("-", "").substring(0,8);
-        user.setPassword(bCryptPasswordEncoder.encode(newPassword));
-        try {
-            userRepository.save(user);
-        } catch (Exception e) {
-            throw new BusinessException(e.getMessage(), HttpStatus.FAILED_DEPENDENCY);
-        }
-        emailService.sendEmail(user.getEmail(), emailService.buildEmail(
-                "Salut, " + user.getProfile().getFirstName(),
-                "Mai jos este noua parola:",
-                newPassword,
-                ""));
         return true;
     }
 }

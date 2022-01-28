@@ -11,7 +11,7 @@ import org.springframework.util.StringUtils;
 import org.utcn.socialapp.auth.dto.AuthDTO;
 import org.utcn.socialapp.auth.dto.CredentialsDTO;
 import org.utcn.socialapp.auth.jwt.JwtUtility;
-import org.utcn.socialapp.auth.refreshToken.RefreshTokenService;
+import org.utcn.socialapp.auth.refreshtoken.RefreshTokenService;
 import org.utcn.socialapp.common.exception.BusinessException;
 import org.utcn.socialapp.email.EmailService;
 import org.utcn.socialapp.user.User;
@@ -38,15 +38,13 @@ public class AuthService {
             UsernamePasswordAuthenticationToken token =
                     new UsernamePasswordAuthenticationToken(credentialsDTO.getEmail().trim(),
                             credentialsDTO.getPassword());
-            authenticationManager.authenticate(token);
+            User user = (User) authenticationManager.authenticate(token).getPrincipal();
+            final String jwtToken = jwtUtility.generateToken(user);
+            String refreshToken = refreshTokenService.createRefreshToken(user);
+            return new AuthDTO(user, jwtToken, refreshToken);
         } catch (AuthenticationException e) {
             throw new BusinessException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
-        final User user = userService.loadUserByUsername(credentialsDTO.getEmail());
-        final String jwtToken = jwtUtility.generateToken(user);
-        String refreshToken = refreshTokenService.createRefreshToken(user);
-        return new AuthDTO(user, jwtToken, refreshToken);
     }
 
     public void logout(Long userId) throws BusinessException {

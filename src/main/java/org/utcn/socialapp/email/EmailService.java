@@ -24,7 +24,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
             helper.setText(email, true);
             helper.setTo(to);
-            helper.setSubject("Confirm your email.");
+            helper.setSubject("Email de la Aplicatia de Mesagerie.");
             helper.setFrom("raluca.jucan@gmail.com");
             javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {

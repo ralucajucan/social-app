@@ -1,4 +1,4 @@
-package org.utcn.socialapp.auth.refreshToken;
+package org.utcn.socialapp.auth.refreshtoken;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,8 +45,7 @@ public class RefreshTokenService implements Serializable {
     }
 
     private void verifyExpiration(RefreshToken token) throws BusinessException {
-        if (token.getExpiration()
-                .isBefore(Instant.now())) {
+        if (token.getExpiration().isBefore(Instant.now())) {
             refreshTokenRepository.delete(token);
             throw new BusinessException(EXPIRED_TOKEN);
         }
