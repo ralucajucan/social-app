@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.utcn.socialapp.message.Message;
 import org.utcn.socialapp.message.MessageStatus;
 
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -23,10 +24,23 @@ public class MessageDTO {
     private String createdOn;
     private String updatedOn;
 
-    public MessageDTO(Message message) {
+    public MessageDTO(Long id, String sender, String receiver, byte[] text, String attachmentIds,
+                      MessageStatus status, boolean edited, Instant createdOn, Instant updatedOn) {
+        this.id = id;
+        this.sender = sender;
+        this.receiver = receiver;
+        this.text = new String(text);
+        this.attachmentIds = attachmentIds;
+        this.status = status;
+        this.edited = edited;
+        this.createdOn = createdOn.toString();
+        this.updatedOn = updatedOn.toString();
+    }
+
+    public MessageDTO(Message message, String senderEmail, String receiverEmail) {
         this.id = message.getMessagePK().getId();
-        this.sender = message.getSender().getEmail();
-        this.receiver = message.getReceiver().getEmail();
+        this.sender = senderEmail;
+        this.receiver = receiverEmail;
         this.text = message.getText();
         this.attachmentIds = message.getAttachmentIds();
         this.attachments = null;
@@ -38,5 +52,21 @@ public class MessageDTO {
 
     public void setAttachments(List<FileDTO> attachments) {
         this.attachments = attachments;
+    }
+
+    @Override
+    public String toString() {
+        return "MessageDTO{" +
+                "id=" + id +
+                ", sender='" + sender + '\'' +
+                ", receiver='" + receiver + '\'' +
+                ", text='" + text + '\'' +
+                ", attachmentIds='" + attachmentIds + '\'' +
+                ", attachments=" + attachments +
+                ", status=" + status +
+                ", edited=" + edited +
+                ", createdOn='" + createdOn + '\'' +
+                ", updatedOn='" + updatedOn + '\'' +
+                '}';
     }
 }

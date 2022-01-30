@@ -26,7 +26,7 @@ public class FileDTO {
     }
 
     public FileDTO(GridFSFile gridFSFile, GridFsOperations operations) {
-        this.id = gridFSFile.getObjectId().toHexString();
+        this.id = "!"+gridFSFile.getObjectId().toHexString();
         this.name = gridFSFile.getFilename();
         this.type = gridFSFile.getMetadata() != null ?
                 gridFSFile.getMetadata().get("_contentType").toString() : null;
@@ -39,10 +39,14 @@ public class FileDTO {
     }
 
     public FileDTO(GridFSFile gridFSFile) {
-        this.id = gridFSFile.getObjectId().toHexString();
+        this.id = "!"+gridFSFile.getObjectId().toHexString();
         this.name = gridFSFile.getFilename();
         this.type = gridFSFile.getMetadata() != null ?
                 gridFSFile.getMetadata().get("_contentType").toString() : null;
         this.size = gridFSFile.getLength();
+    }
+
+    public void setFile(byte[] file) {
+        this.file = file;
     }
 }

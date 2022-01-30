@@ -11,6 +11,5 @@ import lombok.ToString;
 @AllArgsConstructor
 public class SendDTO {
     private String text = "";
-    private String attachmentIds = "";
     private String user;
 }

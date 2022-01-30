@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.utcn.socialapp.common.exception.BusinessException;
 import org.utcn.socialapp.message.dto.ContactDTO;
-import org.utcn.socialapp.message.dto.DraftDTO;
 import org.utcn.socialapp.message.dto.MessageDTO;
 import org.utcn.socialapp.message.dto.SendDTO;
 import org.utcn.socialapp.user.User;
@@ -41,6 +40,13 @@ public class MessageService {
     private final SimpUserRegistry simpUserRegistry;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageChannel clientOutboundChannel;
+
+    public void sendToUser(String email, MessageDTO messageDTO) {
+        simpMessagingTemplate.convertAndSendToUser(
+                email,
+                "/queue/conv",
+                messageDTO);
+    }
 
     public List<String> getConnectedUserList() {
         return simpUserRegistry.getUsers().stream().map(SimpUser::getName).collect(Collectors.toList());
@@ -76,10 +82,28 @@ public class MessageService {
         );
     }
 
-    private MessageDTO saveMessage(String principalEmail, String userEmail, String text, String attachmentIds,
-                                   MessageStatus status) throws BusinessException {
-        if (!StringUtils.hasLength(principalEmail) || Stream.of(userEmail).anyMatch(Objects::isNull)
-                || Stream.of(userEmail).anyMatch(s -> !StringUtils.hasLength(s))) {
+    public void removeAttachmentId(String attachmentId) throws BusinessException {
+        Message message = messageRepository.findByAttachmentIdsContains(attachmentId);
+        if (Objects.isNull(message)) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        String attachmentIds = message.getAttachmentIds();
+        int idx = attachmentIds.indexOf(attachmentId);
+        if (idx != 0 && attachmentIds.charAt(idx - 1) == ',') attachmentId = "," + attachmentId;
+        if (idx == 0 && !attachmentIds.equals(attachmentId)) attachmentId = attachmentId + ",";
+        message.setAttachmentIds(attachmentIds.replace(attachmentId, ""));
+
+        try {
+            messageRepository.save(message);
+        } catch (Exception e) {
+            throw new BusinessException(e.getMessage(), HttpStatus.NOT_MODIFIED);
+        }
+    }
+
+    private MessageDTO saveNewMessage(String principalEmail, String userEmail, String text, String attachmentIds,
+                                      MessageStatus status) throws BusinessException {
+        if (Stream.of(principalEmail, userEmail).anyMatch(Objects::isNull)
+                || Stream.of(principalEmail, userEmail).anyMatch(s -> !StringUtils.hasLength(s))) {
             throw new BusinessException(BAD_REQUEST);
         }
         User principal = userRepository.findByEmail(principalEmail);
@@ -94,52 +118,67 @@ public class MessageService {
                 status
         );
         try {
-            message = messageRepository.save(message);
-            if (status == SENT) {
-                message = messageRepository.save(message);
+            if (status == SENT && this.getConnectedUserList().contains(userEmail)) {
+                message.setStatus(RECEIVED);
             }
+            message = messageRepository.save(message);
         } catch (Exception e) {
             throw new BusinessException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new MessageDTO(message);
+        return new MessageDTO(message, principalEmail, userEmail);
     }
 
-    public MessageDTO saveDraft(String principalEmail, DraftDTO draftDTO) throws BusinessException {
-        Message message = messageRepository.findByStatus(DRAFT);
+    public MessageDTO saveDraft(String principalEmail, String toEmail, String text,
+                                String attachmentId) throws BusinessException {
+        Message message = messageRepository.findDraft(principalEmail, toEmail);
         if (Objects.isNull(message)) {
-            return saveMessage(
+            return saveNewMessage(
                     principalEmail,
-                    draftDTO.getUser(),
-                    draftDTO.getText(),
-                    draftDTO.getAttachmentId(),
+                    toEmail,
+                    text,
+                    attachmentId,
                     DRAFT
             );
         }
-        message.setText(draftDTO.getText());
-        message.setAttachmentIds(message.getAttachmentIds().concat("," + draftDTO.getAttachmentId()));
-        messageRepository.save(message);
-        return new MessageDTO(message);
+        if (StringUtils.hasLength(text)) {
+            message.setText(text);
+        }
+        if (StringUtils.hasLength(attachmentId)) {
+            String currentAttachments = message.getAttachmentIds();
+            if (StringUtils.hasLength(currentAttachments)) {
+                message.setAttachmentIds(currentAttachments.concat("," + attachmentId));
+            } else {
+                message.setAttachmentIds(attachmentId);
+            }
+        }
+        message = messageRepository.save(message);
+        return new MessageDTO(message, principalEmail, toEmail);
+    }
+
+    public MessageDTO saveEdit(Long id, String principalEmail, SendDTO sendDTO) throws BusinessException {
+        Message message = this.getMessage(id, principalEmail, sendDTO.getUser());
+        message.setText(sendDTO.getText());
+        message.setEdited(true);
+        message = messageRepository.save(message);
+        return new MessageDTO(message, principalEmail, sendDTO.getUser());
     }
 
     @Transactional
-    public void sendToUser(String principalEmail, SendDTO sendDTO) throws BusinessException {
-        MessageDTO messageDTO = saveMessage(
+    public MessageDTO newSendMessage(String principalEmail, SendDTO sendDTO) throws BusinessException {
+        Message message = messageRepository.findDraft(principalEmail, sendDTO.getUser());
+        if (!Objects.isNull(message)) {
+            message.setStatus(SENT);
+            message.setText(sendDTO.getText());
+            messageRepository.save(message);
+        }
+
+        return Objects.nonNull(message) ? new MessageDTO(message, principalEmail, sendDTO.getUser()) : saveNewMessage(
                 principalEmail,
                 sendDTO.getUser(),
                 sendDTO.getText(),
-                sendDTO.getAttachmentIds(),
+                "",
                 SENT
         );
-        simpMessagingTemplate.convertAndSendToUser(
-                messageDTO.getReceiver(),
-                "/queue/conv",
-                messageDTO);
-        if (!messageDTO.getReceiver().equals(messageDTO.getSender())) {
-            simpMessagingTemplate.convertAndSendToUser(
-                    messageDTO.getSender(),
-                    "/queue/conv",
-                    messageDTO);
-        }
     }
 
     public List<MessageDTO> getConversation(String userEmail, int page) throws BusinessException {
@@ -150,21 +189,13 @@ public class MessageService {
         User principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, MESSAGE_COUNT, Sort.by("audit.createdOn").descending());
 
-        List<Message> messages = messageRepository.findConversation(user, principal, pageable);
-        messageRepository.updateReceivedAsRead(user);
-        return messageRepository
-                .findConversation(user, principal, pageable)
-                .stream()
-                .map(message -> {
-                    if (message.getStatus() == RECEIVED) {
-                        message.setStatus(READ);
-                        messageRepository.save(message);
-                        message.setStatus(RECEIVED);
-                    }
-                    return message;
-                })
-                .map(MessageDTO::new)
-                .collect(Collectors.toList());
+        List<MessageDTO> messageDTOS = messageRepository.findConversation(principal, user, pageable);
+        messageRepository.updateReceivedAsRead(principal, user);
+        Message draft = messageRepository.findDraft(principal.getEmail(), userEmail);
+        if (Objects.nonNull(draft)) {
+            messageDTOS.add(new MessageDTO(draft, principal.getEmail(), userEmail));
+        }
+        return messageDTOS;
     }
 
     public void sendError(String sessionId, Exception e) {
@@ -177,5 +208,25 @@ public class MessageService {
     public void updateSentAsReceived(String receiverEmail) {
         User receiver = userRepository.findByEmail(receiverEmail);
         messageRepository.updateSentAsReceived(receiver);
+    }
+
+    public Message getMessage(Long id, String principalEmail, String contactEmail) throws BusinessException {
+        Message message = messageRepository.findByIdAndEmails(id, principalEmail, contactEmail);
+        if (Objects.isNull(message)) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        return message;
+    }
+
+    public MessageDTO softDelete(Message message, String principalEmail, String contactEmail) throws BusinessException {
+        message.setAttachmentIds("");
+        message.setText("Mesaj sters");
+        message.setStatus(REMOVED);
+        try {
+            messageRepository.save(message);
+        } catch (Exception e) {
+            throw new BusinessException(e.getMessage(), HttpStatus.NOT_MODIFIED);
+        }
+        return new MessageDTO(message, principalEmail, contactEmail);
     }
 }

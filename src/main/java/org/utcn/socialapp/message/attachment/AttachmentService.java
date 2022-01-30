@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.util.unit.DataSize;
@@ -94,7 +95,7 @@ public class AttachmentService {
         }
     }
 
-    public List<FileDTO> getFilesWithContent(String ids) {
+    public List<FileDTO> getFiles(String ids, boolean withLargeContent) {
         if (!StringUtils.hasLength(ids)) {
             return null;
         }
@@ -104,26 +105,43 @@ public class AttachmentService {
                 .map(FileDTO::new).collect(Collectors.toList());
         List<GridFSFile> gridFSFileList = new ArrayList<>();
         template.find(new Query(Criteria.where("_id").in(getIdList(ids, false)))).into(gridFSFileList);
-        fileList.addAll(
-                gridFSFileList
-                        .stream()
-                        .map(gridFSFile -> new FileDTO(gridFSFile, operations))
-                        .collect(Collectors.toList())
-        );
+        if (withLargeContent) {
+            fileList.addAll(
+                    gridFSFileList
+                            .stream()
+                            .map(gridFSFile -> new FileDTO(gridFSFile, operations))
+                            .collect(Collectors.toList())
+            );
+        } else {
+            fileList.addAll(gridFSFileList.stream().map(FileDTO::new).collect(Collectors.toList()));
+        }
         return fileList;
     }
 
-    public List<FileDTO> getFilesWithoutContent(String ids) {
-        if (!StringUtils.hasLength(ids)) {
-            return null;
+    public void delete(String id) throws BusinessException {
+        try {
+            if (id.startsWith("!")) {
+                template.delete(new Query(Criteria.where("_id").is(id.substring(1))));
+            } else {
+                attachmentRepository.deleteById(id);
+            }
+        } catch (Exception e) {
+            throw new BusinessException(e.getMessage(), HttpStatus.NOT_MODIFIED);
         }
-        List<FileDTO> fileList = attachmentRepository
-                .findByMultipleIds(getIdList(ids, true).toArray(String[]::new))
-                .stream()
-                .map(FileDTO::new).collect(Collectors.toList());
-        List<GridFSFile> gridFSFileList = new ArrayList<>();
-        template.find(new Query(Criteria.where("_id").in(getIdList(ids, false)))).into(gridFSFileList);
-        fileList.addAll(gridFSFileList.stream().map(FileDTO::new).collect(Collectors.toList()));
-        return fileList;
+    }
+
+    public void deleteMultiple(String attachmentIds) throws BusinessException {
+        try {
+            List<String> smallIdList = this.getIdList(attachmentIds, true);
+            List<String> bigIdList = this.getIdList(attachmentIds, false);
+            if (smallIdList.size() != 0) {
+                attachmentRepository.deleteAllById(smallIdList);
+            }
+            if (bigIdList.size() != 0){
+                template.delete(new Query(Criteria.where("_id").in(bigIdList)));
+            }
+        } catch (Exception e) {
+            throw new BusinessException(e.getMessage(), HttpStatus.NOT_MODIFIED);
+        }
     }
 }

@@ -17,11 +17,6 @@ public class Message {
     @EmbeddedId
     private MessagePK messagePK;
 
-    @Embedded
-    private final Audit audit = new Audit();
-
-    private boolean edited = false;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("senderId")
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
@@ -40,9 +35,14 @@ public class Message {
     )
     private byte[] text;
 
+    @Embedded
+    private final Audit audit = new Audit();
+
+    private boolean edited = false;
+
     /**
      * Stored attachments MongoDB ObjectIds
-     * separator is ",", if file > 16 MB an "!" will be present before id
+     * separator is ",", if file > 15 MB an "!" will be present before id
      * maximum 9 ids -> 1 id = 24 char
      */
     private String attachmentIds;

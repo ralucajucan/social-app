@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,7 +48,29 @@ public class MessageController {
     @MessageMapping("/message")
     public void sendToUser(Principal principal, SendDTO sendDTO) throws BusinessException {
         if (Objects.isNull(principal)) throw new BusinessException(UNAUTHORIZED);
-        messageService.sendToUser(principal.getName(), sendDTO);
+        MessageDTO messageDTO = messageService.newSendMessage(principal.getName(), sendDTO);
+        if (StringUtils.hasLength(messageDTO.getAttachmentIds())) {
+            List<FileDTO> fileDTOS = attachmentService.getFiles(messageDTO.getAttachmentIds(), false);
+            fileDTOS.forEach(file -> file.setFile(null));
+            messageDTO.setAttachments(fileDTOS);
+        }
+        messageService.sendToUser(messageDTO.getReceiver(), messageDTO);
+        if (!messageDTO.getReceiver().equals(messageDTO.getSender())) {
+            messageService.sendToUser(messageDTO.getSender(), messageDTO);
+        }
+    }
+
+    @MessageMapping("/draft")
+    public void saveDraft(Principal principal, SendDTO sendDTO) throws BusinessException {
+        messageService.saveDraft(principal.getName(), sendDTO.getUser(), sendDTO.getText(), "");
+    }
+
+    @PostMapping("/edit")
+    public ResponseEntity<MessageDTO> editMessage(Principal principal, @RequestBody SendDTO sendDTO,
+                                                  @RequestParam Long id) throws BusinessException {
+        MessageDTO messageDTO = messageService.saveEdit(id, principal.getName(), sendDTO);
+        messageDTO.setAttachments(attachmentService.getFiles(messageDTO.getAttachmentIds(), false));
+        return ResponseEntity.ok(messageDTO);
     }
 
     @GetMapping("/conv")
@@ -55,15 +78,18 @@ public class MessageController {
             @RequestParam String user,
             @RequestParam(required = false, defaultValue = "0") int page) throws BusinessException {
         List<MessageDTO> messageDTOS = messageService.getConversation(user, page);
-        messageDTOS.stream()
+        messageDTOS
                 .forEach(message -> message.setAttachments(
-                        attachmentService.getFilesWithoutContent(message.getAttachmentIds())));
+                        attachmentService.getFiles(message.getAttachmentIds(), false)));
         return ResponseEntity.ok(messageDTOS);
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) throws IOException {
-        return ResponseEntity.ok(attachmentService.addFile(file));
+    public ResponseEntity<?> upload(Principal principal, @RequestParam String toEmail,
+                                    @RequestParam("file") MultipartFile file) throws IOException, BusinessException {
+        String attachmentId = attachmentService.addFile(file);
+        messageService.saveDraft(principal.getName(), toEmail, "", attachmentId);
+        return ResponseEntity.ok(attachmentId);
     }
 
     @GetMapping("/download/{id}")
@@ -74,6 +100,23 @@ public class MessageController {
                 .contentType(MediaType.parseMediaType(fileDTO.getType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileDTO.getName() + "\"")
                 .body(new ByteArrayResource(fileDTO.getFile()));
+    }
+
+    @DeleteMapping("/attachment")
+    public ResponseEntity<?> deleteAttachment(@RequestParam String id) throws BusinessException {
+        this.attachmentService.delete(id);
+        this.messageService.removeAttachmentId(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<?> deleteMessage(Principal principal, @RequestParam Long id, @RequestParam String contactEmail) throws BusinessException {
+        Message message = messageService.getMessage(id, principal.getName(), contactEmail);
+        String attachmentIds = message.getAttachmentIds();
+        if (StringUtils.hasLength(attachmentIds)) {
+            attachmentService.deleteMultiple(attachmentIds);
+        }
+        return ResponseEntity.ok(messageService.softDelete(message, principal.getName(), contactEmail));
     }
 
     @EventListener()
@@ -95,10 +138,5 @@ public class MessageController {
     @MessageMapping("/refresh-connected")
     public void refreshUserList() {
         messageService.sendUserList(true);
-    }
-
-    @MessageMapping("/update-message")
-    public void updateMessage(){
-
     }
 }

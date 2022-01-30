@@ -17,6 +17,7 @@ import static org.utcn.socialapp.user.Role.ADMIN;
 import static org.utcn.socialapp.user.Role.USER;
 
 @Configuration
+//@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtFilter jwtFilter;
@@ -30,24 +31,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         // To allow Pre-flight [OPTIONS] request from browser
-        web.ignoring()
-           .antMatchers(HttpMethod.OPTIONS, "/**");
+        web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf()
-            .disable()
-                .cors();
+        http.csrf().disable().cors();
         http.sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests()
                 .antMatchers("/api/auth/**","/ws")
                 .permitAll()
-                .antMatchers("/api/profile")
-                .hasAnyRole(USER.name(), ADMIN.name())
-                .antMatchers("/api/admin")
-                .hasRole(ADMIN.name())
                 .anyRequest()
                 .authenticated()
                 .and()
