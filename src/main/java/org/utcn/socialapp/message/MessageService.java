@@ -132,6 +132,9 @@ public class MessageService {
                                 String attachmentId) throws BusinessException {
         Message message = messageRepository.findDraft(principalEmail, toEmail);
         if (Objects.isNull(message)) {
+            if (!Stream.of(text,attachmentId).allMatch(StringUtils::hasLength)){
+                return null;
+            }
             return saveNewMessage(
                     principalEmail,
                     toEmail,
