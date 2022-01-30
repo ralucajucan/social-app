@@ -132,11 +132,11 @@ public class MessageController {
 
     @EventListener({SessionDisconnectEvent.class})
     public void onDisconnect() {
-        messageService.sendUserList(false);
+        messageService.sendUserList("",false);
     }
 
     @MessageMapping("/refresh-connected")
-    public void refreshUserList() {
-        messageService.sendUserList(true);
+    public void refreshUserList(Principal principal) {
+        messageService.sendUserList(principal.getName(),true);
     }
 }

@@ -12,16 +12,17 @@ public class ContactDTO {
     private String email;
     private String name;
     private boolean online = false;
-    private Long newMessages = 0L;
+    private Long newMessages = -1L;
 
     public ContactDTO(String email, String name) {
         this.email = email;
         this.name = name;
     }
 
-    public ContactDTO(String email, String name, Long newMessages) {
+    public ContactDTO(String email, String name, boolean online, Long newMessages) {
         this.email = email;
         this.name = name;
+        this.online = online;
         this.newMessages = newMessages;
     }
 

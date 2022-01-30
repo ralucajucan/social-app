@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-// LESS THAN 16 MB
+// LESS THAN 15 MB
 @Getter
 @NoArgsConstructor
 @Document()

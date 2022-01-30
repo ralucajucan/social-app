@@ -38,8 +38,9 @@ public interface MessageRepository extends JpaRepository<Message, MessagePK> {
             ".message.MessageStatus.DRAFT")
     Message findDraft(String principalEmail, String contactEmail);
 
-    @Query("select count(m) from Message m where m.sender=?1 and m.status<>?2")
-    Long countSenderExcludeStatus(User user, MessageStatus messageStatus);
+    @Query("select count(m) from Message m inner join User s on s.id=m.messagePK.senderId inner join User " +
+            "r on r.id=m.messagePK.receiverId where (s.email=?2 and r.email=?1 and m.status=org.utcn.socialapp.message.MessageStatus.RECEIVED)")
+    Long countReceivedWithSenderAndReceiver(String principalEmail, String contactEmail);
 
     Message findByAttachmentIdsContains(String id);
 

@@ -52,15 +52,7 @@ public class MessageService {
         return simpUserRegistry.getUsers().stream().map(SimpUser::getName).collect(Collectors.toList());
     }
 
-    public List<ContactDTO> getUserList(boolean withNewMessages) {
-        if (withNewMessages) {
-            return userRepository.findAllActive().stream().map(user -> new ContactDTO(
-                            user.getEmail(),
-                            user.getProfile().getFirstName() + " " + user.getProfile().getLastName(),
-                            messageRepository.countSenderExcludeStatus(user, READ)
-                    )
-            ).collect(Collectors.toList());
-        }
+    public List<ContactDTO> getUserList() {
         return userRepository.findAllActive().stream().map(user -> new ContactDTO(
                         user.getEmail(),
                         user.getProfile().getFirstName() + " " + user.getProfile().getLastName()
@@ -68,18 +60,34 @@ public class MessageService {
         ).collect(Collectors.toList());
     }
 
-    public void sendUserList(boolean withNewMessages) {
-        List<ContactDTO> usersList = getUserList(withNewMessages);
+    public void sendUserList(String principalEmail, boolean withNewMessages) {
+        List<ContactDTO> usersList = getUserList();
         List<String> connectedUsersList = getConnectedUserList();
         usersList.forEach(user -> user.setOnline(
                 connectedUsersList.stream().anyMatch(user.getEmail()::equals)
         ));
-        connectedUsersList.forEach(
-                user -> simpMessagingTemplate.convertAndSendToUser(
-                        user,
-                        "/queue/list",
-                        usersList)
-        );
+        if (withNewMessages) {
+            List<ContactDTO> usersWithCountList = usersList.stream().map(user -> new ContactDTO(
+                    user.getEmail(),
+                    user.getName(),
+                    user.isOnline(),
+                    messageRepository.countReceivedWithSenderAndReceiver(principalEmail, user.getEmail())
+                    )).collect(Collectors.toList());
+            connectedUsersList.forEach(
+                    user -> simpMessagingTemplate.convertAndSendToUser(
+                            user,
+                            "/queue/list",
+                            user.equals(principalEmail)? usersWithCountList:usersList)
+            );
+        } else {
+            connectedUsersList.forEach(
+                    user -> simpMessagingTemplate.convertAndSendToUser(
+                            user,
+                            "/queue/list",
+                            usersList)
+            );
+        }
+
     }
 
     public void removeAttachmentId(String attachmentId) throws BusinessException {
@@ -92,7 +100,7 @@ public class MessageService {
         if (idx != 0 && attachmentIds.charAt(idx - 1) == ',') attachmentId = "," + attachmentId;
         if (idx == 0 && !attachmentIds.equals(attachmentId)) attachmentId = attachmentId + ",";
         message.setAttachmentIds(attachmentIds.replace(attachmentId, ""));
-
+        message.setEdited(true);
         try {
             messageRepository.save(message);
         } catch (Exception e) {
@@ -132,7 +140,7 @@ public class MessageService {
                                 String attachmentId) throws BusinessException {
         Message message = messageRepository.findDraft(principalEmail, toEmail);
         if (Objects.isNull(message)) {
-            if (!Stream.of(text,attachmentId).allMatch(StringUtils::hasLength)){
+            if (!Stream.of(text, attachmentId).allMatch(StringUtils::hasLength)) {
                 return null;
             }
             return saveNewMessage(

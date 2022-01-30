@@ -29,7 +29,6 @@ import static org.utcn.socialapp.common.exception.ClientErrorResponse.NOT_FOUND;
 @RequiredArgsConstructor
 public class AttachmentService {
     private final GridFsTemplate template;
-    private final GridFsOperations operations;
     private final AttachmentRepository attachmentRepository;
 
     private String addSmallFile(MultipartFile upload) throws IOException {
@@ -64,7 +63,7 @@ public class AttachmentService {
         if (gridFSFile == null || gridFSFile.getMetadata() == null) {
             return null;
         }
-        return new FileDTO(gridFSFile, operations);
+        return new FileDTO(gridFSFile, template);
     }
 
     private List<String> getIdList(String ids, Boolean isSmall) {
@@ -109,7 +108,7 @@ public class AttachmentService {
             fileList.addAll(
                     gridFSFileList
                             .stream()
-                            .map(gridFSFile -> new FileDTO(gridFSFile, operations))
+                            .map(gridFSFile -> new FileDTO(gridFSFile, template))
                             .collect(Collectors.toList())
             );
         } else {

@@ -13,7 +13,4 @@ public interface AttachmentRepository extends MongoRepository<Attachment, String
 
     @Query("{'id':{$in: ?0 }}")
     List<Attachment> findByMultipleIds(String[] ids);
-
-    // TODO: find use, Maybe a bot that chats with u, has a list of locations and sends u the text associated with location?
-//    List<Person> findByLocationNear(Point location, Distance distance);
 }
