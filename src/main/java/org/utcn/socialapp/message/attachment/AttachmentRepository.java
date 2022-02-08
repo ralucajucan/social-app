@@ -9,8 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface AttachmentRepository extends MongoRepository<Attachment, String> {
-    Optional<Attachment> findByName(String name);
-
     @Query("{'id':{$in: ?0 }}")
     List<Attachment> findByMultipleIds(String[] ids);
 }

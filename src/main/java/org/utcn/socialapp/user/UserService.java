@@ -61,6 +61,7 @@ public class UserService implements UserDetailsService {
             throw new BusinessException(BAD_REQUEST);
         }
         user.setPassword(bCryptPasswordEncoder.encode(passwordDTO.getPassword()));
+        user.setRefreshToken(null);
         try {
             userRepository.save(user);
         } catch (Exception e) {
@@ -127,7 +128,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email);
     }
 
-    public User save(User user){
-        return userRepository.save(user);
+    public void save(User user){
+        userRepository.save(user);
     }
 }

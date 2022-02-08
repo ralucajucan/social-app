@@ -25,7 +25,7 @@ public class MessagePK implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof MessagePK)) return false;
+        if (!(o instanceof MessagePK)) return false;
         MessagePK messagePK = (MessagePK) o;
         return id.equals(messagePK.id)
                 && senderId.equals(messagePK.senderId)

@@ -3,7 +3,7 @@ package org.utcn.socialapp.common.exception;
 import org.springframework.http.HttpStatus;
 
 public class BusinessException extends Exception {
-    private HttpStatus httpStatus;
+    private final HttpStatus httpStatus;
 
 
     public BusinessException(String message, HttpStatus httpStatus) {
